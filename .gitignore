@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+figures/*.png
+statistics/*.csv
+derived_data/common/figure_fcv_fcs_sc_corr_forest_42regions_no_rOB_input.csv
+derived_data/figure_stimulus/stimulus_condition_region_heatmap_input.csv
+derived_data/invertebrates/invertebrate_anatomical_group_summary*.csv
+!figures/.gitkeep
+!statistics/.gitkeep

@@ -1,0 +1,12 @@
+{
+  "subjects": [12, 13, 14, 15, 16, 17, 18],
+  "sampling_rate_hz": 2.0,
+  "highpass_hz": 0.03,
+  "fc_window_frames": 20,
+  "fc_step_frames": 5,
+  "te_bins": 4,
+  "te_lag": 1,
+  "neighbor_fc_window_frames": 20,
+  "neighbor_fc_step_frames": 5,
+  "neighbor_fdr_q": 0.001
+}
