@@ -13,4 +13,4 @@ figure pack or the large original simulation files.
 
 Checksums for all immutable inputs are recorded in `source_manifest.csv`.
 The dense 21-epsilon, four-layer energy-well-width table is recomputed from the
-Figure 13 model and saved under `derived_data/figure_supply_15/`.
+Figure 13 model and saved under `derived_data/figure13/`.

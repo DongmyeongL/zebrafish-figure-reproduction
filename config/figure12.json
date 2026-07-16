@@ -1,0 +1,10 @@
+{
+  "subjects": [12, 13, 14, 15, 16, 17, 18],
+  "rank1_max_iter": 300,
+  "rank1_tolerance": 1e-9,
+  "exclude_self_edges": true,
+  "edge_direction": "column_0_source_to_column_1_target",
+  "modularity_method": "weighted_undirected_leiden",
+  "log_out_in_offset": 1.0,
+  "random_seed": 42
+}

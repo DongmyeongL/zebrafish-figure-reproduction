@@ -55,8 +55,12 @@ FIGURE_DIR = PROJECT_ROOT / "figures"
 STATS_DIR = PROJECT_ROOT / "statistics"
 STATS_CSV = STATS_DIR / "figure13_stats_v2.csv"
 OUT_PNG = FIGURE_DIR / "figure13_final_v2.png"
-ENERGY_POTENTIAL_CURVES = MODEL_INPUT_DIR / "figure13_layer_energy_potential_curves.csv"
-ENERGY_POTENTIAL_SUMMARY = MODEL_INPUT_DIR / "figure13_layer_energy_potential_summary.csv"
+ENERGY_POTENTIAL_CURVES = DERIVED_DIR / "figure13_layer_energy_potential_curves.csv"
+if not ENERGY_POTENTIAL_CURVES.exists():
+    ENERGY_POTENTIAL_CURVES = MODEL_INPUT_DIR / "figure13_layer_energy_potential_curves.csv"
+ENERGY_POTENTIAL_SUMMARY = DERIVED_DIR / "figure13_layer_energy_potential_summary.csv"
+if not ENERGY_POTENTIAL_SUMMARY.exists():
+    ENERGY_POTENTIAL_SUMMARY = MODEL_INPUT_DIR / "figure13_layer_energy_potential_summary.csv"
 # All-layer, dense-epsilon recompute (figure13_layer_energy_potential_v1.py).
 ENERGY_POTENTIAL_CURVES_V1 = DERIVED_DIR / "figure13_layer_energy_potential_curves_v1.csv"
 # Per-(epsilon, run, layer) summary from the SAME 50-run v1 simulation; holds
@@ -218,7 +222,9 @@ def plot_violin_bootstrap(ax, boot_data, p_values, ylabel, colors_violin):
 
 
 def load_figure11_layer_data():
-    data_path = MODEL_INPUT_DIR / "layer_asymmetric_epsilon_linear_data.npz"
+    data_path = DERIVED_DIR / "layer_asymmetric_epsilon_linear_data.npz"
+    if not data_path.exists():
+        data_path = MODEL_INPUT_DIR / "layer_asymmetric_epsilon_linear_data.npz"
     return layer_plot.load_results(data_path)
 
 

@@ -1,0 +1,121 @@
+node,fine_class,anatomy_group
+ADAL,interneuron / integrative,interneurons
+ADAR,interneuron / integrative,interneurons
+ADEL,mechanosensory / other sensory,sensory neurons
+ADER,mechanosensory / other sensory,sensory neurons
+ADLL,chemosensory,olf./chemo
+ADLR,chemosensory,olf./chemo
+AIBL,associative interneuron,interneurons
+AIBR,associative interneuron,interneurons
+AIML,associative interneuron,interneurons
+AIMR,associative interneuron,interneurons
+AINL,associative interneuron,interneurons
+AINR,associative interneuron,interneurons
+AIYL,associative interneuron,interneurons
+AIYR,associative interneuron,interneurons
+AIZL,associative interneuron,interneurons
+AIZR,associative interneuron,interneurons
+ALA,state-modulatory interneuron,state-modulatory
+AQR,thermo/gas sensory,sensory neurons
+ASEL,chemosensory,olf./chemo
+ASER,chemosensory,olf./chemo
+ASGL,chemosensory,olf./chemo
+ASGR,chemosensory,olf./chemo
+ASHL,chemosensory,olf./chemo
+ASIL,chemosensory,olf./chemo
+ASIR,chemosensory,olf./chemo
+ASKL,chemosensory,olf./chemo
+ASKR,chemosensory,olf./chemo
+AUAL,associative interneuron,interneurons
+AUAR,associative interneuron,interneurons
+AVAL,locomotor command interneuron,motor / command
+AVAR,locomotor command interneuron,motor / command
+AVBL,locomotor command interneuron,motor / command
+AVBR,locomotor command interneuron,motor / command
+AVDL,locomotor command interneuron,motor / command
+AVDR,locomotor command interneuron,motor / command
+AVEL,locomotor command interneuron,motor / command
+AVER,locomotor command interneuron,motor / command
+AVHL,interneuron / integrative,interneurons
+AVJL,interneuron / integrative,interneurons
+AVJR,interneuron / integrative,interneurons
+AVKL,interneuron / integrative,interneurons
+AVKR,interneuron / integrative,interneurons
+AVL,interneuron / integrative,interneurons
+AWAL,chemosensory,olf./chemo
+AWAR,chemosensory,olf./chemo
+AWBL,chemosensory,olf./chemo
+AWBR,chemosensory,olf./chemo
+AWCL,chemosensory,olf./chemo
+AWCR,chemosensory,olf./chemo
+BAGL,thermo/gas sensory,sensory neurons
+CEPDL,mechanosensory / other sensory,sensory neurons
+CEPDR,mechanosensory / other sensory,sensory neurons
+CEPVL,mechanosensory / other sensory,sensory neurons
+CEPVR,mechanosensory / other sensory,sensory neurons
+FLPL,mechanosensory / other sensory,sensory neurons
+FLPR,mechanosensory / other sensory,sensory neurons
+IL1DL,mechanosensory / other sensory,sensory neurons
+IL1DR,mechanosensory / other sensory,sensory neurons
+IL1L,mechanosensory / other sensory,sensory neurons
+IL1R,mechanosensory / other sensory,sensory neurons
+IL1VL,mechanosensory / other sensory,sensory neurons
+IL1VR,mechanosensory / other sensory,sensory neurons
+IL2DL,mechanosensory / other sensory,sensory neurons
+IL2DR,mechanosensory / other sensory,sensory neurons
+IL2L,mechanosensory / other sensory,sensory neurons
+IL2R,mechanosensory / other sensory,sensory neurons
+IL2VL,mechanosensory / other sensory,sensory neurons
+IL2VR,mechanosensory / other sensory,sensory neurons
+OLLL,mechanosensory / other sensory,sensory neurons
+OLLR,mechanosensory / other sensory,sensory neurons
+OLQDL,mechanosensory / other sensory,sensory neurons
+OLQDR,mechanosensory / other sensory,sensory neurons
+OLQVL,mechanosensory / other sensory,sensory neurons
+OLQVR,mechanosensory / other sensory,sensory neurons
+RIAL,associative interneuron,interneurons
+RIAR,associative interneuron,interneurons
+RIBL,associative interneuron,interneurons
+RIBR,associative interneuron,interneurons
+RICL,state-modulatory interneuron,state-modulatory
+RICR,state-modulatory interneuron,state-modulatory
+RID,interneuron / integrative,interneurons
+RIH,interneuron / integrative,interneurons
+RIML,state-modulatory interneuron,state-modulatory
+RIMR,state-modulatory interneuron,state-modulatory
+RIR,interneuron / integrative,interneurons
+RIS,state-modulatory interneuron,state-modulatory
+RIVL,head motor / premotor,motor / command
+RIVR,head motor / premotor,motor / command
+RMDDL,head motor / premotor,motor / command
+RMDDR,head motor / premotor,motor / command
+RMDL,head motor / premotor,motor / command
+RMDR,head motor / premotor,motor / command
+RMDVL,head motor / premotor,motor / command
+RMDVR,head motor / premotor,motor / command
+RMED,head motor / premotor,motor / command
+RMEL,head motor / premotor,motor / command
+RMER,head motor / premotor,motor / command
+RMEV,head motor / premotor,motor / command
+RMGL,state-modulatory interneuron,state-modulatory
+SAADL,head motor / premotor,motor / command
+SAADR,head motor / premotor,motor / command
+SAAVL,head motor / premotor,motor / command
+SAAVR,head motor / premotor,motor / command
+SMBVR,head motor / premotor,motor / command
+SMDDL,head motor / premotor,motor / command
+SMDDR,head motor / premotor,motor / command
+SMDVL,head motor / premotor,motor / command
+SMDVR,head motor / premotor,motor / command
+URADL,head motor / premotor,motor / command
+URADR,head motor / premotor,motor / command
+URAVL,head motor / premotor,motor / command
+URAVR,head motor / premotor,motor / command
+URBL,interneuron / integrative,interneurons
+URBR,interneuron / integrative,interneurons
+URXL,thermo/gas sensory,sensory neurons
+URXR,thermo/gas sensory,sensory neurons
+URYDL,mechanosensory / other sensory,sensory neurons
+URYDR,mechanosensory / other sensory,sensory neurons
+URYVL,mechanosensory / other sensory,sensory neurons
+URYVR,mechanosensory / other sensory,sensory neurons

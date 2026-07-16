@@ -2,14 +2,16 @@
 
 This directory contains the plotting code and compact, frozen analysis inputs
 needed to reproduce six main-text figures and nine supplementary figures. It
-does not contain the large calcium-imaging, cell-level connectome, or simulation
-source datasets used upstream. Those data are represented here by documented
-region-level tables, compact simulation summaries, or fixed image assets.
+also contains public processing scripts that rebuild derived tables from
+prepared raw inputs. Large calcium-imaging and cell-level connectome exports
+are not redistributed in Git; bundled functional-unit traces provide one
+self-contained raw-to-derived example, while the remaining inputs can be
+supplied through an external data directory.
 
 ## Rebuild all figures
 
 ```bash
-python -m venv .venv
+python3.10 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python run_all_figures.py
@@ -21,6 +23,8 @@ by the plotting scripts are written to `statistics/`.
 Generated figures, statistics, and intermediate plotting tables are ignored by
 Git; run the commands above to recreate them locally. `checksums.sha256`
 records the integrity of the distributed code and frozen inputs.
+Maintainers can regenerate it after intentional release changes with
+`python scripts/update_checksums.py`.
 
 ### Tested environment
 
@@ -47,6 +51,59 @@ To verify the distributed files before running the analysis, use:
 sha256sum -c checksums.sha256
 ```
 
+## Rebuild derived data
+
+The public processing workflow starts from prepared raw inputs rather than
+microscope-native files. Audit the available inputs with:
+
+```bash
+python scripts/manage_data.py
+```
+
+Figure 9 can be rebuilt from the seven compact functional-unit trace files
+distributed with this repository:
+
+```bash
+python scripts/run_pipeline.py \
+  --target figure9 \
+  --stage derived \
+  --derived-root work/figure9/derived_data
+```
+
+For analyses requiring externally stored data, place the inputs in the layout
+documented in `RAW_DATA.md` and run, for example:
+
+```bash
+python scripts/run_pipeline.py \
+  --target figure12 \
+  --raw-root /path/to/prepared_raw_data \
+  --derived-root work/figure12/derived_data
+
+python scripts/run_pipeline.py \
+  --target stimulus \
+  --raw-root /path/to/prepared_raw_data \
+  --derived-root work/stimulus/derived_data
+```
+
+Available targets are `figure9`, `figure12`, `stimulus`, `celegans`,
+`drosophila`, `layer`, `supply1`, and `supply13`. The complete layer-model and
+TE-surrogate calculations require `--full-model` and `--full-controls`,
+respectively, because they are computationally intensive. Use `--skip-missing`
+with `--target all` to run only targets whose inputs are available.
+
+Derived outputs can be checked independently of private reference files:
+
+```bash
+python scripts/validate_derived.py figure9 \
+  --derived-root work/figure9/derived_data \
+  --compare-bundled
+python tests/smoke_test.py
+```
+
+The input contract, expected schemas, source links, and redistribution
+boundaries are documented in `RAW_DATA.md`, `DATA_SOURCES.md`, and
+`config/datasets.csv`.
+
 ## Main-figure map
 
 The internal filenames retain their development names. The manuscript mapping
@@ -54,12 +111,12 @@ is as follows.
 
 | Manuscript figure | Output | Plotting code | Primary bundled input | Reproduction level |
 |---|---|---|---|---|
-| Fig. 2 | `figure9_final_v2.png` | `figure_code/figure9_final_v2.py` | `derived_data/figure9/` | Analysis-level tables to figure |
-| Fig. 3 | `figure12_final_v2.png` | `figure_code/figure12_final_v2.py` | `derived_data/figure12/` | Analysis-level tables to figure |
-| Fig. 4 | `figure_fcv_fcs_sc_corr_forest.png` | `figure_code/figure_fcv_fcs_sc_corr_forest.py` | `derived_data/figure9/`, `derived_data/figure12/`, and `derived_data/common/` | Matched region-level analysis and figure |
-| Fig. 5 | `figure_stimulus_delta_fcv_acd_combined.png` | `figure_code/figure_stimulus_delta_fcv_acd_combined.py` | `derived_data/common/` | Frozen matched region-level summaries to figure |
+| Fig. 2 | `figure9_final_v2.png` | `figure_code/figure9_final_v2.py` | `derived_data/figure9/` | Bundled prepared raw to derived table to figure |
+| Fig. 3 | `figure12_final_v2.png` | `figure_code/figure12_final_v2.py` | `derived_data/figure12/` | External prepared raw to derived table to figure |
+| Fig. 4 | `figure_fcv_fcs_sc_corr_forest.png` | `figure_code/figure_fcv_fcs_sc_corr_forest.py` | `derived_data/figure9/`, `derived_data/figure12/`, and `derived_data/common/` | Matched derived tables to analysis and figure |
+| Fig. 5 | `figure_stimulus_delta_fcv_acd_combined.png` | `figure_code/figure_stimulus_delta_fcv_acd_combined.py` | `derived_data/common/` | External prepared stimulus raw to matched analysis and figure |
 | Fig. 6 | `figure13_final_v2.png` | `figure_code/figure13_final_v2.py` | `derived_data/figure13/`, `raw_data/figure13/`, and `raw_data/figure_supply_15/figure13_inputs/` | Layer-model summaries plus frozen whole-brain simulation results |
-| Fig. 7 | `figure_invertebrate_oo_fcv_relationships.png` | `figure_code/figure_invertebrate_oo_fcv_relationships.py` | `derived_data/invertebrates/` | Matched node/region-level analysis and figure |
+| Fig. 7 | `figure_invertebrate_oo_fcv_relationships.png` | `figure_code/figure_invertebrate_oo_fcv_relationships.py` | `derived_data/invertebrates/` | External prepared species data to matched analysis and figure |
 
 ## Supplementary-figure map
 
@@ -109,27 +166,31 @@ where the public-release workflow begins.
 
 ## Reproducibility levels
 
-This release distinguishes three levels of reproduction:
+This release distinguishes four levels of reproduction:
 
-1. **Analysis-level reproduction:** statistical comparisons and plots are
+1. **Prepared-raw reproduction:** derived tables are recalculated from
+   cell-, functional-unit-, ROI-, or edge-level prepared inputs using the
+   scripts in `data_processing_code/`.
+2. **Analysis-level reproduction:** statistical comparisons and plots are
    recalculated from bundled recording-, subject-, node-, or region-level
    tables.
-2. **Summary-level reproduction:** plots and reported summaries are rebuilt
+3. **Summary-level reproduction:** plots and reported summaries are rebuilt
    from compact simulation or control-analysis outputs, without rerunning the
    large upstream computation.
-3. **Asset-level reproduction:** a composite figure is reconstructed from
+4. **Asset-level reproduction:** a composite figure is reconstructed from
    fixed image assets and compact statistics. This applies to Supply 5.
 
 The level assigned to each figure is shown in the tables above.
 
 ## Reproducibility boundary
 
-The release reproduces manuscript figures from final analysis-level inputs. It
-is not an end-to-end reconstruction from raw microscopy or connectome files.
-The four-layer stochastic model code is included because it is compact. The
-large zebrafish whole-brain simulations are represented by their frozen
-observation table, and Supply 5 uses fixed network-diagram assets. See
-`DATA_SOURCES.md` for the provenance and interpretation of each data group.
+The release provides prepared-raw-to-derived code for the zebrafish functional,
+structural, and stimulus analyses; the invertebrate analyses; the compact layer
+model; and selected supplementary controls. It is not an end-to-end
+reconstruction from microscope-native files. The large zebrafish whole-brain
+simulations remain represented by frozen observation tables, and Supply 5 uses
+fixed network-diagram assets. See `RAW_DATA.md` and `DATA_SOURCES.md` for the
+boundary of each data group.
 
 The canonical zebrafish structure-function analyses use the same 42 anatomical
 regions and exclude `rOB`, as recorded in

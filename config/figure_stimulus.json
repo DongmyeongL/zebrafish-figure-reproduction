@@ -1,0 +1,13 @@
+{
+  "subjects": [12, 13, 14, 15, 16, 17, 18],
+  "stimulus_indices": [10, 11, 12],
+  "stimulus_labels": {
+    "10": "OMR forward",
+    "11": "OMR rightward",
+    "12": "OMR leftward"
+  },
+  "fc_window_frames": 20,
+  "fc_step_frames": 5,
+  "bootstrap_resamples": 2000,
+  "bootstrap_seed": 0
+}

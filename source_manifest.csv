@@ -10,4 +10,7 @@ raw_data/figure13,whole-brain perturbation observations,zebrafish network simula
 raw_data/figure_supply_1,compact distance-distribution plotting input,zebrafish coordinate and FC-pair analysis
 raw_data/figure_supply_5,fixed network diagrams and null summaries,zebrafish network perturbation analysis
 raw_data/figure_supply_15,representative traces and model-panel inputs,zebrafish and four-layer simulations
-figure_code,plotting and compact model code,curated final_figure_pack_1 scripts
+figure_code,plotting and compact model code,curated manuscript plotting scripts
+data_processing_code,raw-to-derived calculations,curated and path-normalized manuscript processing scripts
+raw_data/figure9,bundled compact functional-unit traces,prepared zebrafish subject-level functional units
+config/datasets.csv,raw input contract and source registry,public release curation

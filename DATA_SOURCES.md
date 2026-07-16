@@ -1,7 +1,7 @@
 # Data inventory and provenance
 
-All files under `derived_data/` are frozen analysis-level inputs copied from the
-curated `final_figure_pack_1` workflow. They contain no imputed replacement for
+All files under `derived_data/` are frozen analysis-level inputs exported from
+the curated manuscript workflow. They contain no imputed replacement for
 missing raw observations unless explicitly encoded by the original analysis.
 
 | Data group | Contents | Upstream boundary |
@@ -21,3 +21,24 @@ missing raw observations unless explicitly encoded by the original analysis.
 The term `raw_data` is retained in a few paths for compatibility with the
 curated plotting scripts. In this public bundle, those files are compact figure
 inputs or fixed assets, not the primary experimental raw datasets.
+
+## Raw-to-derived availability
+
+The executable processing paths are summarized below. Exact filenames and
+schemas are listed in `RAW_DATA.md` and `config/datasets.csv`.
+
+| Target | Public processing code | Input availability |
+|---|---|---|
+| Figure 9 functional measures | `data_processing_code/figure9/` | Seven compact functional-unit trace files bundled |
+| Figure 12 structural measures | `data_processing_code/figure12/` | External prepared subject bundles or compact SC files required |
+| Stimulus FCV/FCS | `data_processing_code/figure_stimulus/` | External prepared subject bundles required |
+| *C. elegans* metrics | `data_processing_code/invertebrates/01_compute_celegans_metrics.py` | Annotations bundled; recordings and connectome export external |
+| *Drosophila* metrics | `data_processing_code/invertebrates/02_compute_drosophila_metrics.py` | Prepared Branson999 and FlyWire exports external |
+| Four-layer model | `data_processing_code/figure13/` | Code and parameters bundled; full run is computationally intensive |
+| Supply 1 compact input | `data_processing_code/figure_supply_1/` | Optional external pair-level arrays required |
+| Supply 13 TE controls | `data_processing_code/figure_supply_13/` | Uses bundled Figure 9 traces; full surrogate run is intensive |
+
+Provider records do not always expose files in the prepared schema consumed by
+these scripts. Accordingly, DOI links document scientific provenance, while a
+separate archival deposit should be used for prepared inputs that may legally
+be redistributed. No script silently downloads or substitutes missing data.

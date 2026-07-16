@@ -1,8 +1,15 @@
 __pycache__/
 *.py[cod]
 .DS_Store
+work/
 figures/*.png
 statistics/*.csv
+statistics/**/*.csv
+raw_data/figure9/original_subjects/
+raw_data/figure12/
+raw_data/invertebrates/celegans/recordings/
+raw_data/invertebrates/celegans/herm_full_edgelist.csv
+raw_data/invertebrates/drosophila/
 derived_data/common/figure_fcv_fcs_sc_corr_forest_42regions_no_rOB_input.csv
 derived_data/figure_stimulus/stimulus_condition_region_heatmap_input.csv
 derived_data/invertebrates/invertebrate_anatomical_group_summary*.csv

@@ -1,6 +1,6 @@
 """Draw anatomical-group summaries from the clean invertebrate tables.
 
-Inputs are produced inside final_figure_pack_1 by the invertebrate processing
+Inputs are produced by the public invertebrate processing
 pipeline. No legacy plotting table or pre-rendered panel is used.
 """
 

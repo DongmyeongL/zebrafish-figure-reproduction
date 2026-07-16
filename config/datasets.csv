@@ -1,0 +1,19 @@
+dataset_id,relative_path,distribution,required_for,source,doi_or_url,notes
+zf_functional_unit_traces,figure9/functional_unit_traces/zebrafish_subject_*_raw_cluster_traces.pkl,bundled,figure9;figure_supply_13,Prepared from saved spatial functional units,,Seven compact recording files are distributed in this repository
+zf_region_labels,figure9/region_labels.csv,bundled,figure9;figure12;stimulus,Zebrafish atlas root-area labels,,Small annotation table distributed in this repository
+zf_primary_subjects,figure9/original_subjects/subject_*_data_cellular_synapse_sc_100_data.pkl,external,figure9_primary;figure12;stimulus,Primary prepared zebrafish subject bundles,,Not redistributed; place all seven subject files at this path
+zf_compact_sc,figure12/subject_*_compact_sc.npz,external_alternative,figure12,Compact SC extracted from the primary subject bundles,,Approximately 1.1 GB for seven subjects; may be used instead of zf_primary_subjects
+celegans_recordings,invertebrates/celegans/recordings/*_raw_traces.pkl,external,celegans,WormWideWeb Atanas et al. 2023,https://doi.org/10.1016/j.cell.2023.07.035,Prepared recording exports required by the public processing script
+celegans_connectome,invertebrates/celegans/herm_full_edgelist.csv,external,celegans,Cook et al. 2019 chemical connectome,https://doi.org/10.1038/s41586-019-1352-7,Directed chemical-synapse edge list
+celegans_annotations,invertebrates/celegans/celegans_*annotations.csv,bundled,celegans,Literature-guided analysis annotations,,Class and display-group annotations are distributed
+drosophila_recordings,invertebrates/drosophila/recordings/*_raw_traces.pkl,external,drosophila,Branson999 Turner et al. 2021,https://doi.org/10.1016/j.cub.2021.03.004,Prepared side-aware recording exports required by the script
+flywire_connections,invertebrates/drosophila/proofread_connections_783.feather,external,drosophila,FlyWire783 Dorkenwald et al. 2024,https://doi.org/10.1038/s41586-024-07558-y,Cell-level directed edge table
+flywire_root_ids,invertebrates/drosophila/proofread_root_ids_783.npy,external,drosophila,FlyWire783 Dorkenwald et al. 2024,https://doi.org/10.1038/s41586-024-07558-y,Proofread cell identifiers
+flywire_pre_localization,invertebrates/drosophila/per_neuron_neuropil_count_pre_783.feather,external,drosophila,FlyWire783 neuropil annotations,https://doi.org/10.1038/s41586-024-07558-y,Presynaptic localization counts
+flywire_post_localization,invertebrates/drosophila/per_neuron_neuropil_count_post_783.feather,external,drosophila,FlyWire783 neuropil annotations,https://doi.org/10.1038/s41586-024-07558-y,Postsynaptic localization counts
+fly_ito_order,invertebrates/drosophila/ito_region_order.csv,external,drosophila,Ito side-aware region mapping,,Analysis annotation table
+layer_model_inputs,figure_supply_15/figure13_inputs/,bundled,figure13;figure_supply_15,Four-layer model and frozen whole-brain summaries,,Model code is distributed; whole-brain perturbation simulations remain frozen-summary inputs
+supply1_compact,figure_supply_1/figure_supply_1_compact.npz,bundled,figure_supply_1,Compact distance histogram and fitted bin parameters,,Primary pair-level arrays are not redistributed
+supply1_pair_primary,figure_supply_1/primary/figure_supply1_fc_dist_data.npz,external,figure_supply_1_primary,Pair-level distance and FC arrays,,Optional input for rebuilding the compact Supply 1 file
+supply1_soma_primary,figure_supply_1/primary/figure_supply1_soma_dist_data.npy,external,figure_supply_1_primary,Soma-to-endpoint distance array,,Optional input for rebuilding the compact Supply 1 file
+supply5_assets,figure_supply_5/network_diagrams/,bundled,figure_supply_5,Fixed network-diagram assets,,Asset-level reproduction only

@@ -1,0 +1,23 @@
+name: reproduce
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke-and-figures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: sha256sum -c checksums.sha256
+      - run: python tests/smoke_test.py
+      - run: python scripts/manage_data.py --target figure9 --strict
+      - run: python scripts/run_pipeline.py --target figure9 --stage derived --derived-root work/ci/derived_data
+      - run: python scripts/validate_derived.py figure9 --derived-root work/ci/derived_data --compare-bundled
+      - run: python run_all_figures.py
+      - run: python validate_release.py
