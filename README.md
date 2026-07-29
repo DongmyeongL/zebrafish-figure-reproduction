@@ -104,6 +104,24 @@ python scripts/validate_derived.py figure9 \
 python tests/smoke_test.py
 ```
 
+### Reproduce SI robustness statistics
+
+Compact iteration- and region-level inputs are included for the SI controls of
+the primary skeleton-r12 structural analysis. Run all six robustness summaries
+with:
+
+```bash
+python data_processing_code/robustness/run_all.py
+```
+
+This reproduces the anatomical-unit-size/radius grid, reconstructed-morphology
+subsampling, strength-preserving topology null, division-adjusted analysis,
+subject-specific random-effects meta-analysis, and prediction-residual
+controls. Outputs are written to `statistics/robustness/`. See
+`data_processing_code/robustness/README.md` for the exact sampling units,
+released inputs, and the boundary between full reconstruction and compact
+statistical reproduction.
+
 The input contract, expected schemas, source links, and redistribution
 boundaries are documented in `RAW_DATA.md`, `DATA_SOURCES.md`, and
 `config/datasets.csv`.

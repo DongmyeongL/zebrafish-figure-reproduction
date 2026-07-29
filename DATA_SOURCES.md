@@ -13,6 +13,7 @@ missing raw observations unless explicitly encoded by the original analysis.
 | `derived_data/invertebrates/` | Matched worm neuron summaries, fly local-cell and 137-unit summaries, and compact multiscale matrices | Derived from published worm and fly datasets |
 | `derived_data/figure13/` | Dense layer-model summaries and potential curves | Model outputs; model implementation is included |
 | `derived_data/figure_supply_13/` | TE null, leave-one-animal-out, and example-pair summaries | Derived from zebrafish functional-unit traces |
+| `derived_data/robustness/` | Reconstruction-grid correlations, morphology-subsampling iterations, topology-null realizations, and region/subject control inputs | Derived from the primary skeleton-r12 zebrafish SC and matched FCV tables |
 | `raw_data/figure_supply_1/` | Frozen six-panel alignment/construction QC asset and fit statistics | Microscopy-scale morphology and endpoint MAT files are not redistributed |
 | `raw_data/figure_supply_0/` | Frozen empirical and whole-brain simulation inputs | Large whole-brain simulation is not rerun |
 | `raw_data/figure_supply_5/` | Fixed network diagrams and compact null statistics | Diagram assets are not regenerated in this release |
@@ -37,6 +38,7 @@ schemas are listed in `RAW_DATA.md` and `config/datasets.csv`.
 | *Drosophila* metrics | `data_processing_code/invertebrates/02_compute_drosophila_metrics.py` | Prepared Branson999 and FlyWire exports external |
 | Four-layer model | `data_processing_code/figure13/` | Code and parameters bundled; full run is computationally intensive |
 | Supply 13 TE controls | `data_processing_code/figure_supply_13/` | Uses bundled Figure 9 traces; full surrogate run is intensive |
+| SI robustness controls | `data_processing_code/robustness/` | Compact iteration- and region-level inputs bundled; rebuilding their endpoint-level inputs requires the external Figure 12 source data |
 
 Provider records do not always expose files in the prepared schema consumed by
 these scripts. Accordingly, DOI links document scientific provenance, while a
