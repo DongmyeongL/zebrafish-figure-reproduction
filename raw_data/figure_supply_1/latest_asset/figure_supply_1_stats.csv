@@ -1,0 +1,5 @@
+figure,panel,model,statistic,value,standard_error,n_bins
+figure_supply_1,B,lognormal FC by distance bin,mean_lognormal_shape,1.3357043585563158,,40
+figure_supply_1,B,scale(d)=A*exp(-d/lambda)+C,A,0.06221837638069904,0.004952634216143811,40
+figure_supply_1,B,scale(d)=A*exp(-d/lambda)+C,lambda,75.99471974418756,10.290743330789276,40
+figure_supply_1,B,scale(d)=A*exp(-d/lambda)+C,C,0.05709190399602188,0.001273054561287463,40

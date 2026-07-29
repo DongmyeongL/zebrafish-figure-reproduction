@@ -18,7 +18,8 @@ neighborhood NetTE for Figure 9 and Supply 13.
 
 ### Compact and frozen supplementary inputs
 
-- Supply 1 contains histogram counts and distance-bin lognormal parameters.
+- Supply 1 contains the final six-panel QC asset and its fit-statistics table;
+  the underlying microscopy-scale morphology and endpoint MAT files remain external.
 - Supply 5 contains fixed network diagrams and null-statistic arrays.
 - Figure 13/Supply 15 contain frozen whole-brain perturbation summaries and
   representative traces. The four-layer model itself can be rerun from code.
@@ -40,10 +41,16 @@ The raw-to-derived scripts use these keys:
 - `stim_data`, `stim_array`, `neuron_region_id`, and `root_area` for stimulus
   FCV/FCS.
 
-Alternatively, Figure 12 can begin from seven compact files at
-`figure12/subject_<ID>_compact_sc.npz`, each containing `edges` and
-`neuron_region`. The compact files total approximately 1.1 GB and are therefore
-not stored in GitHub.
+Figure 12 can begin from seven r12 compact files at
+`figure12/fcs_calibrated_skeleton_kmeans_nearest_r12_sc/subject_<ID>_compact_sc.npz`,
+each containing `edges` and `neuron_region`. To reconstruct those files, place
+subject coordinate MAT files under `figure12/original_subject_mat/` and
+`neuronEndpoints_data.mat`, `somaCoordinates_data.mat`, and
+`signle_neuron_poistion_data.mat` under `figure12/anatomy/`. The public pipeline
+then performs subject-specific FCS calibration, skeleton-path K-means endpoint
+classification, nearest-endpoint assignment within a radius of 12 imaging-coordinate
+units, anatomical-unit DCA, and regional aggregation. These large external inputs
+and generated compact SC files are not stored in GitHub.
 
 ## External C. elegans inputs
 

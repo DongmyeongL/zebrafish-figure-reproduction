@@ -58,6 +58,7 @@ DIVISION_COLORS = fs.ZEBRAFISH_DIVISION_COLORS.copy()
 DIVISION_MARKERS = {"Tel": "o", "Di": "s", "Mes": "^", "Hind": "D"}
 N_BOOT = 2000
 BOOTSTRAP_SEED = 0
+PANEL_AB_P_MODE = "fdr_bh"
 
 ANNOT_FS = fs.TICK_FS_2COL - 1
 TICK_FS = fs.TICK_FS_2COL
@@ -196,9 +197,12 @@ def make_figure(frame, stats_rows):
                     **result,
                 }
             )
-    corrected = multipletests([cell["p"] for cell in cells], method="fdr_bh")[1]
-    for cell, p_fdr in zip(cells, corrected):
-        cell["p_fdr"] = float(p_fdr)
+    for y_column, _, _ in FUNC:
+        group = [cell for cell in cells if cell["y_column"] == y_column]
+        corrected = multipletests([cell["p"] for cell in group], method="fdr_bh")[1]
+        for cell, p_fdr in zip(group, corrected):
+            cell["p_fdr"] = float(p_fdr)
+    for cell in cells:
         stats_rows.append(
             {
                 "figure": "fcv_fcs_sc_corr_forest",
@@ -209,6 +213,8 @@ def make_figure(frame, stats_rows):
                 "coef": cell["r"],
                 "p": cell["p"],
                 "p_fdr_bh": cell["p_fdr"],
+                "panel_ab_p_used": cell["p"] if PANEL_AB_P_MODE == "raw" else cell["p_fdr"],
+                "panel_ab_p_mode": PANEL_AB_P_MODE,
                 "boot_ci_lo": cell["lo"],
                 "boot_ci_hi": cell["hi"],
                 "n": len(frame),
@@ -249,7 +255,8 @@ def make_figure(frame, stats_rows):
             zorder=5,
         )
         for center, cell in zip(centers, group):
-            star = _star(cell["p_fdr"])
+            p_for_star = cell["p"] if PANEL_AB_P_MODE == "raw" else cell["p_fdr"]
+            star = _star(p_for_star)
             right = cell["r"] >= 0
             x_at = cell["boot"].max() + 0.02 if right else cell["boot"].min() - 0.02
             ax.text(
@@ -294,12 +301,12 @@ def make_figure(frame, stats_rows):
                 pos_y = 0.2
             
             if row == 1 and column == 0:
-                pos_x = 0.66
+                pos_x = 0.20
                 pos_y = 0.17
 
             if row == 1 and column == 1:
-                pos_x = 0.59
-                pos_y = 0.85
+                pos_x = 0.05
+                pos_y = 0.45
                                 
                 
             ax.text(
@@ -349,7 +356,7 @@ def main():
     frame = load_frame()
     stats_rows = []
     figure = make_figure(frame, stats_rows)
-    figure.savefig(OUT_PNG, dpi=300, bbox_inches="tight", transparent=False)
+    figure.savefig(OUT_PNG, dpi=600, bbox_inches="tight", transparent=False)
     plt.close(figure)
     pd.DataFrame(stats_rows).to_csv(OUT_CSV, index=False)
     print(f"n = {len(frame)} complete regions")

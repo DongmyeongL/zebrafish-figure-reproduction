@@ -415,7 +415,7 @@ def main():
     
     os.makedirs(os.path.dirname(OUT_PNG), exist_ok=True)
     os.makedirs(STATS_DIR, exist_ok=True)
-    fig.savefig(OUT_PNG, dpi=300, bbox_inches="tight", pad_inches=0.03, transparent=False)
+    fig.savefig(OUT_PNG, dpi=600, bbox_inches="tight", pad_inches=0.03, transparent=False)
     pd.DataFrame([row for row in stats_rows if row is not None]).to_csv(STATS_CSV, index=False)
     plt.close(fig)
     print(f"Saved {OUT_PNG}")

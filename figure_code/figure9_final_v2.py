@@ -23,6 +23,7 @@ from statsmodels.stats.multitest import multipletests
 from scipy.stats import mannwhitneyu
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
 from matplotlib.gridspec import GridSpec
+from matplotlib.transforms import Bbox
 import matplotlib.patches as mpatches
 
 import figure_style as fs
@@ -94,6 +95,7 @@ plt.rcParams.update({
 })
 DATA = os.path.join(PROJECT_ROOT, "derived_data", "figure9")
 OUTPUT_PNG = os.path.join(PROJECT_ROOT, "figures", f"figure9_final_v2{OUTPUT_SUFFIX}.png")
+OUTPUT_PDF = os.path.join(PROJECT_ROOT, "figures", f"figure9_final_v2{OUTPUT_SUFFIX}.pdf")
 STATS_DIR = os.path.join(PROJECT_ROOT, "statistics")
 STATS_CSV = os.path.join(STATS_DIR, f"figure9_final_v2{OUTPUT_SUFFIX}_stats.csv")
 STATS_ROWS = []
@@ -332,7 +334,8 @@ y_labels = [label for label, _ in PANEL_A_FEATURES]
 # ============================================================
 # 2. Layout preparation
 # ============================================================
-_fig_w = fs.MAIN_FIGURE_WIDTH
+_output_w = fs.MAIN_FIGURE_WIDTH
+_fig_w = 8.4
 _fig_h = fs.MAIN_FIGURE_HEIGHT_TALL
 fig = plt.figure(figsize=(_fig_w, _fig_h))
 gs = GridSpec(
@@ -631,7 +634,17 @@ _add_figure9_panel_labels(ax_dendro, ax_c, ax_d, ax_e)
 # ============================================================
 # 5. Save figure and statistics
 # ============================================================
-fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches='tight', transparent=False)
+fig.canvas.draw()
+_content_bbox = fig.get_tightbbox(fig.canvas.get_renderer())
+_output_h = 6.4
+_output_bbox = Bbox.from_bounds(
+    _content_bbox.x0 - (_output_w - _content_bbox.width) / 2,
+    _content_bbox.y0 - (_output_h - _content_bbox.height) / 2,
+    _output_w,
+    _output_h,
+)
+fig.savefig(OUTPUT_PNG, dpi=600, bbox_inches=_output_bbox, transparent=False)
+#fig.savefig(OUTPUT_PDF, bbox_inches='tight', transparent=False)
 os.makedirs(STATS_DIR, exist_ok=True)
 pd.DataFrame(STATS_ROWS).to_csv(STATS_CSV, index=False)
 print(f"Saved {STATS_CSV}")

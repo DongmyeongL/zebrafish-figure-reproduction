@@ -21,10 +21,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.transforms import Bbox
 import matplotlib.patches as mpatches
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
 from scipy.stats import kruskal, mannwhitneyu
-from statsmodels.stats.multitest import multipletests
+try:
+    from statsmodels.stats.multitest import multipletests
+except ImportError:
+    def multipletests(pvals, method="holm"):
+        """Minimal Holm fallback for lightweight reproduction environments."""
+        if method != "holm":
+            raise ValueError("Only Holm correction is implemented without statsmodels")
+        pvals = np.asarray(pvals, dtype=float)
+        n_tests = len(pvals)
+        order = np.argsort(pvals)
+        adjusted_sorted = np.maximum.accumulate((n_tests - np.arange(n_tests)) * pvals[order])
+        adjusted_sorted = np.clip(adjusted_sorted, 0.0, 1.0)
+        adjusted = np.empty(n_tests, dtype=float)
+        adjusted[order] = adjusted_sorted
+        return adjusted < 0.05, adjusted, None, None
 
 import figure_style as fs
 
@@ -56,24 +71,47 @@ def _parse_args():
             f"(default: {DEFAULT_REGIONS_FILE})"
         ),
     )
+    parser.add_argument(
+        "--sc-source",
+        default="fcs_calibrated_skeleton_kmeans_nearest_r12",
+        help="Functional-unit SC source under derived_data/figure12/functional_unit_region_measures",
+    )
     parser.add_argument("--output-suffix", default="", help="Suffix added to figure and statistics filenames")
     return parser.parse_args()
 
 
 ARGS = _parse_args()
-OUTPUT_SUFFIX = f"_{ARGS.output_suffix}" if ARGS.output_suffix else ""
+_auto_suffix = "" if ARGS.sc_source == "fcs_calibrated_endpoint" else ARGS.sc_source
+_suffix = ARGS.output_suffix or _auto_suffix
+OUTPUT_SUFFIX = f"_{_suffix}" if _suffix else ""
 
 
-STRUCTURAL_TABLE = "figure12_subject_region_structural_measures.csv"
+STRUCTURAL_TABLE = (
+    f"functional_unit_region_measures/{ARGS.sc_source}/"
+    "figure12_subject_region_functional_unit_structural_measures.csv"
+)
+
 ZF_GROUP_ORDER = list(ANATOMY_GROUP_ORDER)
 ZF_GROUP_COLORS = fs.ZEBRAFISH_DIVISION_COLORS.copy()
+
 PANEL_A_FEATURES = [
-    ("OO\nfraction", "OO_fraction"),
-    (r"$\mathbf{DCA}_{\mathbf{post}}$", "PostDCA"),
-    (r"$\mathbf{DCA}_{\mathbf{pre}}$", "PreDCA"),
-    ("Modularity\nQ", "Modularity"),
+    ("OO frac.", "Hard_OO_fraction"),
+    (r"$\mathbf{DCA}_{\mathbf{post}}$", "FU_DCApost"),
+    (r"$\mathbf{DCA}_{\mathbf{pre}}$", "FU_DCApre"),
+ #   ("Output\nparticipation", "OutputParticipation"),
+    ("Reciprocity", "Reciprocity"),
     ("log\n(Out/In)", "LogOutIn"),
 ]
+
+
+#PANEL_A_FEATURES = [
+#    ("OO\nfraction", "OO_fraction"),
+#    (r"$\mathbf{DCA}_{\mathbf{post}}$", "PostDCA"),
+#    (r"$\mathbf{DCA}_{\mathbf{pre}}$", "PreDCA"),
+#    ("Modularity\nQ", "Modularity"),
+#    ("log\n(Out/In)", "LogOutIn"),
+#]
+
 PANEL_A_PRIORITY_REGIONS = ["SP", "rSP", "P", "rP", "PO", "rPO"]
 PANEL_A_HIGHLIGHT_REGIONS = {"P", "rP", "SP",  "rPO", "PO", "rOB","rSP"}
 
@@ -90,9 +128,10 @@ plt.rcParams.update({
     "ps.fonttype": 42,
 })
 DATA = os.path.join(PROJECT_ROOT, "derived_data", "figure12")
-OUTPUT_PNG = os.path.join(PROJECT_ROOT, "figures", f"figure12_final_v2{OUTPUT_SUFFIX}.png")
+OUTPUT_PNG = os.path.join(PROJECT_ROOT, "figures", f"figure12_final_v3{OUTPUT_SUFFIX}.png")
+OUTPUT_PDF = os.path.join(PROJECT_ROOT, "figures", f"figure12_final_v3{OUTPUT_SUFFIX}.pdf")
 STATS_DIR = os.path.join(PROJECT_ROOT, "statistics")
-STATS_CSV = os.path.join(STATS_DIR, f"figure12{OUTPUT_SUFFIX}_stats_v2.csv")
+STATS_CSV = os.path.join(STATS_DIR, f"figure12{OUTPUT_SUFFIX}_stats_v3.csv")
 STATS_ROWS = []
 
 
@@ -233,10 +272,10 @@ def _add_figure12_panel_labels(ax_dendro, ax_b, ax_c, ax_d):
         )
 
 
-def _load_latest_zebrafish_sc_values():
+def _load_latest_zebrafish_sc_values(apply_region_filter=True):
     out = pd.read_csv(os.path.join(DATA, STRUCTURAL_TABLE))
     out = out.loc[out["species"].eq("Zebrafish")].copy()
-    if ARGS.regions_file:
+    if apply_region_filter and ARGS.regions_file:
         region_table = pd.read_csv(ARGS.regions_file)
         if "node" not in region_table.columns:
             raise KeyError(f"Region filter lacks a node column: {ARGS.regions_file}")
@@ -269,7 +308,11 @@ def _wide_division_df(plot_df, measure):
 # ============================================================
 # 1. Data loading and plotting calculations
 # ============================================================
-sc_values = _load_latest_zebrafish_sc_values()
+# Panel A retains the canonical region set used for the main clustering
+# display. Panels B-D use every available subject-region observation.
+sc_values = _load_latest_zebrafish_sc_values(apply_region_filter=True)
+# Use the same canonical 42-region set in the heatmap and division panels.
+sc_values_all_regions = _load_latest_zebrafish_sc_values(apply_region_filter=True)
 panel_a_cols = [col for _, col in PANEL_A_FEATURES]
 
 # Panel A: average raw recording-node values at the node level first, then
@@ -321,7 +364,8 @@ y_labels = [label for label, _ in PANEL_A_FEATURES]
 # 2. Layout preparation
 # ============================================================
 # Top=[A (dendro+divbar+heat)] | Bottom=[B C D]
-_fig_w = fs.MAIN_FIGURE_WIDTH
+_output_w = fs.MAIN_FIGURE_WIDTH
+_fig_w = 8.4
 _fig_h = fs.MAIN_FIGURE_HEIGHT_TALL
 fig = plt.figure(figsize=(_fig_w, _fig_h))
 gs = GridSpec(
@@ -459,31 +503,35 @@ def _format_dca_axis(ax):
     ax.yaxis.labelpad = 6
 
 
-# Figure 12 zebrafish data (Panels B-D). Standardize regions within each
-# subject and retain every subject-region observation as an individual point.
-panel_bcd_measures = ["PostDCA", "PreDCA", "OO_fraction"]
-sc_values_subject_z = sc_values.copy()
+# Figure 12 zebrafish data (Panels B-D). Standardize across regions within
+# each recording and retain every recording-region observation.
+panel_bcd_measures = ["FU_DCApost", "FU_DCApre", "Hard_OO_fraction"]
+#panel_bcd_measures = ["PostDCA", "PreDCA", "OO_fraction"]
+sc_values_subject_z = sc_values_all_regions.copy()
 for _col in panel_bcd_measures:
     sc_values_subject_z[_col] = sc_values_subject_z.groupby("recording_id")[_col].transform(
         lambda values: _zscore(values.to_numpy(dtype=float))
     )
 
-_post_dca = _wide_division_df(sc_values_subject_z, "PostDCA")
-_pre_dca = _wide_division_df(sc_values_subject_z, "PreDCA")
-_oo_fraction = _wide_division_df(sc_values_subject_z, "OO_fraction")
+_post_dca = _wide_division_df(sc_values_subject_z, "FU_DCApost")
+_pre_dca = _wide_division_df(sc_values_subject_z, "FU_DCApre")
+_oo_fraction = _wide_division_df(sc_values_subject_z, "Hard_OO_fraction")
 
 
+_boxplot_panel(ax_b, _oo_fraction, "OO fraction")
+_boxplot_panel(ax_c, _post_dca, r"$\mathrm{DCA}_{\mathrm{post}}$")
+_boxplot_panel(ax_d, _pre_dca, r"$\mathrm{DCA}_{\mathrm{pre}}$")
 
-_boxplot_panel(ax_b, _post_dca, r"$\mathrm{DCA}_{\mathrm{post}}$")
-_boxplot_panel(ax_c, _pre_dca, r"$\mathrm{DCA}_{\mathrm{pre}}$")
-_boxplot_panel(ax_d, _oo_fraction, "OO fraction")
 
+ax_c.set_ylim([-4.00,3.00]);
+ax_d.set_ylim([-2.5,2.50]);
 
-_add_sig_bars(ax_b, {c: _post_dca[c] for c in division_order}, division_order, r"$\mathrm{DCA}_{\mathrm{post}}$")
-_add_sig_bars(ax_c, {c: _pre_dca[c] for c in division_order}, division_order, r"$\mathrm{DCA}_{\mathrm{pre}}$")
-_add_sig_bars(ax_d, {c: _oo_fraction[c] for c in division_order}, division_order, "OO fraction")
+_add_sig_bars(ax_b, {c: _oo_fraction[c] for c in division_order}, division_order, "OO fraction")
+_add_sig_bars(ax_c, {c: _post_dca[c] for c in division_order}, division_order, r"$\mathrm{DCA}_{\mathrm{post}}$")
+_add_sig_bars(ax_d, {c: _pre_dca[c] for c in division_order}, division_order, r"$\mathrm{DCA}_{\mathrm{pre}}$")
 _format_dca_axis(ax_b)
 _format_dca_axis(ax_c)
+_format_dca_axis(ax_d)
 
 # Panel A: dendrogram, division bar, and feature heatmap
 dendrogram(
@@ -638,7 +686,17 @@ _add_figure12_panel_labels(ax_dendro, ax_b, ax_c, ax_d)
 # ============================================================
 # 5. Save figure and statistics
 # ============================================================
-fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight", transparent=False)
+fig.canvas.draw()
+_content_bbox = fig.get_tightbbox(fig.canvas.get_renderer())
+_output_h = 6.4
+_output_bbox = Bbox.from_bounds(
+    _content_bbox.x0 - (_output_w - _content_bbox.width) / 2,
+    _content_bbox.y0 - (_output_h - _content_bbox.height) / 2,
+    _output_w,
+    _output_h,
+)
+fig.savefig(OUTPUT_PNG, dpi=600, bbox_inches=_output_bbox, transparent=False)
+# The public release writes the manuscript PNG only.
 os.makedirs(STATS_DIR, exist_ok=True)
 pd.DataFrame(STATS_ROWS).to_csv(STATS_CSV, index=False)
 print(f"Saved {STATS_CSV}")

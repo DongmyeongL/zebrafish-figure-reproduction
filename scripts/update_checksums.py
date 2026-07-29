@@ -31,6 +31,8 @@ def distributed_files() -> list[Path]:
         name = relative.as_posix()
         if name == OUTPUT.name or name.endswith(".pyc"):
             continue
+        if not (ROOT / relative).is_file():
+            continue
         if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
             continue
         selected.append(ROOT / relative)

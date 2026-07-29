@@ -14,7 +14,6 @@ import pandas as pd
 import figure_style as fs
 from figure_stimulus_condition_region_heatmaps import (
     CONDITION_ORDER,
-    DIVISION_ORDER,
     OUT_TABLE,
     build_table,
 )

@@ -1,12 +1,15 @@
 # Manuscript figure reproduction bundle
 
 This directory contains the plotting code and compact, frozen analysis inputs
-needed to reproduce six main-text figures and nine supplementary figures. It
+needed to reproduce six main-text figures and eleven supplementary figures. It
 also contains public processing scripts that rebuild derived tables from
 prepared raw inputs. Large calcium-imaging and cell-level connectome exports
 are not redistributed in Git; bundled functional-unit traces provide one
 self-contained raw-to-derived example, while the remaining inputs can be
 supplied through an external data directory.
+
+The conceptual schematic `fig1.png` is intentionally outside this bundle; it
+is an illustration rather than a data-derived figure.
 
 ## Rebuild all figures
 
@@ -18,7 +21,7 @@ python run_all_figures.py
 python validate_release.py
 ```
 
-PNG outputs are written to `figures/` at 300 dpi. Statistical tables generated
+PNG outputs are written to `figures/` at manuscript resolution. Statistical tables generated
 by the plotting scripts are written to `statistics/`.
 Generated figures, statistics, and intermediate plotting tables are ignored by
 Git; run the commands above to recreate them locally. `checksums.sha256`
@@ -41,6 +44,7 @@ For example:
 
 ```bash
 python figure_code/figure9_final_v2.py
+python figure_code/figure12_final_v3.py
 python figure_code/figure13_final_v2.py
 python figure_code/figure_supply_15.py
 ```
@@ -86,7 +90,7 @@ python scripts/run_pipeline.py \
 ```
 
 Available targets are `figure9`, `figure12`, `stimulus`, `celegans`,
-`drosophila`, `layer`, `supply1`, and `supply13`. The complete layer-model and
+`drosophila`, `layer`, and `supply13`. The complete layer-model and
 TE-surrogate calculations require `--full-model` and `--full-controls`,
 respectively, because they are computationally intensive. Use `--skip-missing`
 with `--target all` to run only targets whose inputs are available.
@@ -112,11 +116,11 @@ is as follows.
 | Manuscript figure | Output | Plotting code | Primary bundled input | Reproduction level |
 |---|---|---|---|---|
 | Fig. 2 | `figure9_final_v2.png` | `figure_code/figure9_final_v2.py` | `derived_data/figure9/` | Bundled prepared raw to derived table to figure |
-| Fig. 3 | `figure12_final_v2.png` | `figure_code/figure12_final_v2.py` | `derived_data/figure12/` | External prepared raw to derived table to figure |
-| Fig. 4 | `figure_fcv_fcs_sc_corr_forest.png` | `figure_code/figure_fcv_fcs_sc_corr_forest.py` | `derived_data/figure9/`, `derived_data/figure12/`, and `derived_data/common/` | Matched derived tables to analysis and figure |
-| Fig. 5 | `figure_stimulus_delta_fcv_acd_combined.png` | `figure_code/figure_stimulus_delta_fcv_acd_combined.py` | `derived_data/common/` | External prepared stimulus raw to matched analysis and figure |
+| Fig. 3 | `figure12_final_v3_fcs_calibrated_skeleton_kmeans_nearest_r12.png` | `figure_code/figure12_final_v3.py` | `derived_data/figure12/functional_unit_region_measures/fcs_calibrated_skeleton_kmeans_nearest_r12/` | Subject-region structural table to figure |
+| Fig. 4 | `figure_fcv_fcs_fu_sc_corr_forest_fcs_calibrated_skeleton_kmeans_nearest_r12_two_way_subsampling.png` | `figure_code/figure_fcv_fcs_fu_sc_corr_forest.py` | Figure 9/12 summaries and compressed two-way-subsampling iterations | Matched analysis and figure |
+| Fig. 5 | `figure_stimulus_delta_fcv_acd_combined_skeleton_kmeans_nearest_r12_two_way_subsampling.png` | `figure_code/figure_stimulus_delta_fcv_acd_combined_skeleton_kmeans_nearest_r12_two_way_subsampling.py` | Stimulus summaries, r12 structural summaries, and compressed two-way-subsampling iterations | Matched analysis and figure |
 | Fig. 6 | `figure13_final_v2.png` | `figure_code/figure13_final_v2.py` | `derived_data/figure13/`, `raw_data/figure13/`, and `raw_data/figure_supply_15/figure13_inputs/` | Layer-model summaries plus frozen whole-brain simulation results |
-| Fig. 7 | `figure_invertebrate_oo_fcv_relationships.png` | `figure_code/figure_invertebrate_oo_fcv_relationships.py` | `derived_data/invertebrates/` | External prepared species data to matched analysis and figure |
+| Fig. 7 | `figure_invertebrate_oo_fcv_relationships_with_137_subunits.png` | `figure_code/figure_invertebrate_oo_fcv_relationships_with_137_subunits.py` | `derived_data/invertebrates/` | Cellular and 137-unit fly analyses plus worm summaries |
 
 ## Supplementary-figure map
 
@@ -125,15 +129,17 @@ output filenames are used below.
 
 | Output | Plotting code | Primary bundled input | Reproduction level |
 |---|---|---|---|
-| `figure_supply_1.png` | `figure_code/figure_supply_1.py` | `raw_data/figure_supply_1/` | Compact summary to figure |
+| `figure_supply_1.png` | `figure_code/figure_supply_1.py` | `raw_data/figure_supply_1/latest_asset/` | Frozen six-panel QC asset; microscopy-scale MAT inputs are external |
 | `figure_supply_2_proc.png` | `figure_code/figure_supply_2_proc.py` | `derived_data/figure12/` | Analysis-level table to figure |
 | `figure_supply_5.png` | `figure_code/figure_supply_5.py` | `raw_data/figure_supply_5/` | Fixed network assets and null summaries to composite figure |
 | `figure_supply_10_proc.png` | `figure_code/figure_supply_10_proc.py` | `derived_data/figure9/` | Analysis-level table to figure |
 | `figure_supply_13.png` | `figure_code/figure_supply_13.py` | `derived_data/figure_supply_13/` | Frozen TE control summaries to figure |
 | `figure_supply_15.png` | `figure_code/figure_supply_15.py` | `derived_data/figure13/` and `raw_data/figure_supply_15/` | Model summaries and representative traces to figure |
+| `figure_supply_0.png` | `figure_code/figure_supply_0.py` | `raw_data/figure_supply_0/` | Frozen empirical and whole-brain simulation inputs to figure |
 | `figure_supplement_te_structural_controls.png` | `figure_code/figure_supplement_te_structural_controls.py` | `derived_data/figure9/` and `derived_data/figure12/` | Matched region-level analysis and figure |
 | `figure_stimulus_condition_region_profiles.png` | `figure_code/figure_stimulus_condition_region_profiles.py` | `derived_data/figure_stimulus/` | Subject-condition-region table to figure |
 | `figure_invertebrate_anatomical_group_summary.png` | `figure_code/figure_invertebrate_anatomical_group_summary.py` | `derived_data/invertebrates/` | Node/recording summaries to figure |
+| `figure_invertebrate_multiscale_sc_fc_matrices.png` | `figure_code/figure_invertebrate_multiscale_sc_fc_matrices.py` | `derived_data/invertebrates/invertebrate_multiscale_sc_fc_matrices.npz` | Compact multiscale matrix bundle to figure |
 
 ## Upstream data sources
 
@@ -193,5 +199,5 @@ fixed network-diagram assets. See `RAW_DATA.md` and `DATA_SOURCES.md` for the
 boundary of each data group.
 
 The canonical zebrafish structure-function analyses use the same 42 anatomical
-regions and exclude `rOB`, as recorded in
+regions (the selected set excludes `rOB`), as recorded in
 `derived_data/common/legacy_stimulus_forest_42_regions_no_rOB.csv`.

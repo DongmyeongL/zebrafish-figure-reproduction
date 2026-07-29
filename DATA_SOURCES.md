@@ -7,13 +7,14 @@ missing raw observations unless explicitly encoded by the original analysis.
 | Data group | Contents | Upstream boundary |
 |---|---|---|
 | `derived_data/figure9/` | Recording-by-region FCV, FCS, FC reconfiguration, and TE measures | Derived from zebrafish calcium recordings and saved functional units |
-| `derived_data/figure12/` | Subject-by-region DCA, OO fraction, modularity, and out/in measures | Derived from cell-level directed SC |
+| `derived_data/figure12/` | Skeleton-r12 anatomical-unit DCA, OO fraction, reciprocity, and out/in summaries, plus two-way-subsampling results | Derived from the endpoint-matched directed SC |
 | `derived_data/common/` | Canonical 42-region set and matched spontaneous/stimulus plotting tables | Final matched region-level observations |
 | `derived_data/figure_stimulus/` | Subject-condition-region raw and standardized FCV/FCS | Derived from stimulus-period calcium activity |
-| `derived_data/invertebrates/` | Matched node/region FCV and directed structural summaries | Derived from published worm and fly datasets |
+| `derived_data/invertebrates/` | Matched worm neuron summaries, fly local-cell and 137-unit summaries, and compact multiscale matrices | Derived from published worm and fly datasets |
 | `derived_data/figure13/` | Dense layer-model summaries and potential curves | Model outputs; model implementation is included |
 | `derived_data/figure_supply_13/` | TE null, leave-one-animal-out, and example-pair summaries | Derived from zebrafish functional-unit traces |
-| `raw_data/figure_supply_1/` | Compact histogram and fitted distance-bin parameters | Replaces large pair-level distance/FC arrays for plotting only |
+| `raw_data/figure_supply_1/` | Frozen six-panel alignment/construction QC asset and fit statistics | Microscopy-scale morphology and endpoint MAT files are not redistributed |
+| `raw_data/figure_supply_0/` | Frozen empirical and whole-brain simulation inputs | Large whole-brain simulation is not rerun |
 | `raw_data/figure_supply_5/` | Fixed network diagrams and compact null statistics | Diagram assets are not regenerated in this release |
 | `raw_data/figure_supply_15/` | Representative empirical/model traces and Figure 13 panel inputs | Frozen trace and simulation outputs |
 | `raw_data/figure13/` | Whole-brain perturbation observations | Large simulation itself is not rerun |
@@ -35,7 +36,6 @@ schemas are listed in `RAW_DATA.md` and `config/datasets.csv`.
 | *C. elegans* metrics | `data_processing_code/invertebrates/01_compute_celegans_metrics.py` | Annotations bundled; recordings and connectome export external |
 | *Drosophila* metrics | `data_processing_code/invertebrates/02_compute_drosophila_metrics.py` | Prepared Branson999 and FlyWire exports external |
 | Four-layer model | `data_processing_code/figure13/` | Code and parameters bundled; full run is computationally intensive |
-| Supply 1 compact input | `data_processing_code/figure_supply_1/` | Optional external pair-level arrays required |
 | Supply 13 TE controls | `data_processing_code/figure_supply_13/` | Uses bundled Figure 9 traces; full surrogate run is intensive |
 
 Provider records do not always expose files in the prepared schema consumed by

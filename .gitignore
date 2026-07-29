@@ -3,8 +3,10 @@ __pycache__/
 .DS_Store
 work/
 figures/*.png
+figures/**/*.png
 statistics/*.csv
 statistics/**/*.csv
+derived_data/common/*_input.csv
 raw_data/figure9/original_subjects/
 raw_data/figure12/
 raw_data/invertebrates/celegans/recordings/

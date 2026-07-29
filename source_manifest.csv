@@ -1,13 +1,14 @@
 path_group,release_role,primary_upstream_source
 derived_data/figure9,spontaneous functional analysis inputs,zebrafish calcium imaging and saved functional units
-derived_data/figure12,directed structural analysis inputs,zebrafish cell-level directed structural connectivity
+derived_data/figure12,skeleton-r12 directed structural summaries and subsampling distributions,zebrafish endpoint-matched anatomical-unit connectivity
 derived_data/common,canonical region matching and stimulus summary inputs,matched Figure 9 Figure 12 and stimulus analyses
 derived_data/figure_stimulus,subject-condition-region FCV and FCS,zebrafish stimulus-period calcium imaging
-derived_data/invertebrates,worm and fly structure-function summaries,published C. elegans and Drosophila datasets
+derived_data/invertebrates,worm and multiscale fly structure-function summaries,published C. elegans and Drosophila datasets
 derived_data/figure13,dense four-layer model summaries,four-layer stochastic model
 derived_data/figure_supply_13,transfer-entropy control summaries,zebrafish functional-unit calcium traces
 raw_data/figure13,whole-brain perturbation observations,zebrafish network simulation
-raw_data/figure_supply_1,compact distance-distribution plotting input,zebrafish coordinate and FC-pair analysis
+raw_data/figure_supply_1,frozen six-panel QC asset and fit statistics,zebrafish coordinate alignment and endpoint analysis
+raw_data/figure_supply_0,frozen empirical and whole-brain simulation inputs,zebrafish functional and perturbation analysis
 raw_data/figure_supply_5,fixed network diagrams and null summaries,zebrafish network perturbation analysis
 raw_data/figure_supply_15,representative traces and model-panel inputs,zebrafish and four-layer simulations
 figure_code,plotting and compact model code,curated manuscript plotting scripts

@@ -1,7 +1,8 @@
-"""Combine panels A, C, and D from the stimulus and delta forest figures."""
+"""Mean and OMR-condition variability of stimulus FCV using FU-SC measures."""
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -15,16 +16,51 @@ import figure_fcv_fcs_sc_corr_forest as forest
 
 PACK_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PACK_ROOT / "derived_data" / "common"
-STIMULUS_INPUT = (
-    INPUT_DIR / "figure_stimulus_fcv_fcs_sc_corr_forest_legacy42_no_rOB_input.csv"
+REGIONS = INPUT_DIR / "legacy_stimulus_forest_42_regions_no_rOB.csv"
+SPONTANEOUS = PACK_ROOT / "derived_data" / "figure9" / "figure9_region_summary.csv"
+STIMULUS = PACK_ROOT / "derived_data" / "figure_stimulus" / "stimulus_fc_region_summary.csv"
+STIMULUS_DETAIL = (
+    PACK_ROOT / "derived_data" / "figure_stimulus" / "stimulus_fc_measures_subject_condition_region.csv"
 )
-DELTA_INPUT = (
-    INPUT_DIR / "figure_delta_fcv_fcs_sc_corr_forest_legacy42_no_rOB_input.csv"
+DEFAULT_SC_SOURCE = "fcs_calibrated_endpoint"
+FIGURE_BASENAME = "figure_stimulus_delta_fcv_acd_combined"
+PANEL_AB_DISTRIBUTION = "region_bootstrap"
+PANEL_AB_P_MODE = "fdr_bh"
+
+FU_SC_MEASURES = [
+    ("Hard_OO_fraction", "OO frac."),
+    ("FU_DCApost", r"$\mathrm{DCA}_{\mathrm{post}}$"),
+    ("FU_DCApre", r"$\mathrm{DCA}_{\mathrm{pre}}$"),
+    ("Reciprocity", "Reciprocity"),
+    ("LogOutIn", "log(O/I)"),
+]
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Draw stimulus FCV forest/scatter panels with FU-SC measures")
+    parser.add_argument("--sc-source", default=DEFAULT_SC_SOURCE)
+    parser.add_argument(
+        "--output-suffix",
+        default="",
+        help="Suffix added to output files. Defaults to the SC source for non-canonical sources.",
+    )
+    return parser.parse_args()
+
+
+ARGS = _parse_args()
+_suffix = ARGS.output_suffix or ("" if ARGS.sc_source == DEFAULT_SC_SOURCE else ARGS.sc_source)
+OUTPUT_SUFFIX = f"_{_suffix}" if _suffix else ""
+FU_STRUCTURAL = (
+    PACK_ROOT
+    / "derived_data"
+    / "figure12"
+    / "functional_unit_region_measures"
+    / ARGS.sc_source
+    / "figure12_functional_unit_region_summary.csv"
 )
-OUT_PNG = PACK_ROOT / "figures" / "figure_stimulus_delta_fcv_acd_combined.png"
-OUT_STATS = (
-    PACK_ROOT / "statistics" / "figure_stimulus_delta_fcv_acd_combined_stats.csv"
-)
+STIMULUS_INPUT = INPUT_DIR / f"{FIGURE_BASENAME}{OUTPUT_SUFFIX}_input.csv"
+OUT_PNG = PACK_ROOT / "figures" / f"{FIGURE_BASENAME}{OUTPUT_SUFFIX}.png"
+OUT_STATS = PACK_ROOT / "statistics" / f"{FIGURE_BASENAME}{OUTPUT_SUFFIX}_stats.csv"
 
 
 def compute_cells(frame: pd.DataFrame, func_specs, analysis: str):
@@ -43,10 +79,64 @@ def compute_cells(frame: pd.DataFrame, func_specs, analysis: str):
                     **result,
                 }
             )
-    corrected = multipletests([cell["p"] for cell in cells], method="fdr_bh")[1]
-    for cell, p_fdr in zip(cells, corrected):
-        cell["p_fdr"] = float(p_fdr)
+    for y_column, _, _ in func_specs:
+        group = [cell for cell in cells if cell["y_column"] == y_column]
+        corrected = multipletests([cell["p"] for cell in group], method="fdr_bh")[1]
+        for cell, p_fdr in zip(group, corrected):
+            cell["p_fdr"] = float(p_fdr)
     return cells
+
+
+def _build_base_frame() -> pd.DataFrame:
+    """Match the canonical stimulus set to complete FU structural measures."""
+    sc_columns = [column for column, _ in FU_SC_MEASURES]
+    regions = pd.read_csv(REGIONS)[["legacy_order", "root_area_id", "node", "anatomy_group"]]
+    spontaneous = pd.read_csv(SPONTANEOUS)[["root_area_id", "node", "EdgeStdFCV", "FCS"]].rename(
+        columns={"EdgeStdFCV": "spont_FCV", "FCS": "spont_FCS"}
+    )
+    stimulus = pd.read_csv(STIMULUS)[["root_area_id", "node", "FCV", "FCS"]].rename(
+        columns={"FCV": "stim_FCV", "FCS": "stim_FCS"}
+    )
+    condition_fcv = (
+        pd.read_csv(STIMULUS_DETAIL)
+        .groupby(["root_area_id", "node", "stimulus_index"], as_index=False)["FCV_z"]
+        .mean()
+        .groupby(["root_area_id", "node"], as_index=False)["FCV_z"]
+        .agg(lambda values: float(np.std(values.to_numpy(float), ddof=0)))
+        .rename(columns={"FCV_z": "stim_FCV_condition_sd"})
+    )
+    structural = pd.read_csv(FU_STRUCTURAL)[["root_area_id", "node", *sc_columns]]
+    frame = (
+        regions
+        .merge(spontaneous, on=["root_area_id", "node"], how="left", validate="one_to_one")
+        .merge(stimulus, on=["root_area_id", "node"], how="left", validate="one_to_one")
+        .merge(condition_fcv, on=["root_area_id", "node"], how="left", validate="one_to_one")
+        .merge(structural, on=["root_area_id", "node"], how="left", validate="one_to_one")
+        .replace([np.inf, -np.inf], np.nan)
+    )
+    required = [
+        "spont_FCV", "spont_FCS", "stim_FCV", "stim_FCS", "stim_FCV_condition_sd", *sc_columns
+    ]
+    frame = frame.loc[frame[required].notna().all(axis=1)].copy()
+    if len(frame) < 4:
+        raise RuntimeError("Too few complete regions after FU-SC matching")
+    return frame.sort_values("legacy_order").reset_index(drop=True)
+
+
+def _zscore_structural(frame: pd.DataFrame) -> pd.DataFrame:
+    out = frame.copy()
+    for column, _ in FU_SC_MEASURES:
+        out[f"{column}_raw"] = out[column]
+        out[column] = forest._zscore(out[column].to_numpy(float))
+    return out
+
+
+def build_stimulus_frame() -> pd.DataFrame:
+    frame = _build_base_frame()
+    frame["EdgeStdFCV"] = forest._zscore(frame["stim_FCV"].to_numpy(float))
+    frame["FCS"] = forest._zscore(frame["stim_FCS"].to_numpy(float))
+    frame["ConditionFCVSD"] = forest._zscore(frame["stim_FCV_condition_sd"].to_numpy(float))
+    return _zscore_structural(frame)
 
 
 def draw_forest(ax, cells, y_column: str, title: str, color: str, panel: str):
@@ -78,7 +168,8 @@ def draw_forest(ax, cells, y_column: str, title: str, color: str, panel: str):
         zorder=5,
     )
     for center, cell in zip(centers, group):
-        star = forest._star(cell["p_fdr"])
+        p_for_star = cell["p"] if PANEL_AB_P_MODE == "raw" else cell["p_fdr"]
+        star = forest._star(p_for_star)
         right = cell["r"] >= 0
         x_at = cell["boot"].max() + 0.02 if right else cell["boot"].min() - 0.02
         ax.text(
@@ -96,9 +187,7 @@ def draw_forest(ax, cells, y_column: str, title: str, color: str, panel: str):
     ax.set_yticklabels([label for _, label in forest.SC_MEASURES], fontsize=forest.TICK_FS)
     ax.set_ylim(len(forest.SC_MEASURES) - 0.4, -0.6)
     ax.margins(x=0.18)
-    if panel == "A":
-        ax.set_xlim(-1.0, 1.0)
-    elif panel == "B":
+    if panel in {"A", "B"}:
         ax.set_xlim(-1.0, 1.0)
         
     ax.tick_params(axis="both", labelsize=forest.TICK_FS)
@@ -175,21 +264,16 @@ def draw_scatter(
 
 
 def main() -> None:
-    stimulus = pd.read_csv(STIMULUS_INPUT)
-    delta = pd.read_csv(DELTA_INPUT)
-    if len(stimulus) != 42 or len(delta) != 42:
-        raise RuntimeError("Both combined-figure inputs must contain 42 regions")
+    forest.SC_MEASURES = FU_SC_MEASURES
+    forest.SCAT_COLS = FU_SC_MEASURES[:2]
+    stimulus = build_stimulus_frame()
+    stimulus.to_csv(STIMULUS_INPUT, index=False)
 
     stimulus_specs = [
         ("EdgeStdFCV", "FCV", "#5B8DB8"),
-        ("FCS", "FCS", "#E0A03C"),
-    ]
-    delta_specs = [
-        ("EdgeStdFCV", r"$\Delta$FCV", "#5B8DB8"),
-        ("FCS", r"$\Delta$FCS", "#E0A03C"),
+        ("ConditionFCVSD", "FCV SD across OMR conditions", "#4C9A8A"),
     ]
     stimulus_cells = compute_cells(stimulus, stimulus_specs, "stimulus")
-    delta_cells = compute_cells(delta, delta_specs, "delta")
 
     figure = plt.figure(
         figsize=(forest.fs.MAIN_FIGURE_WIDTH, forest.fs.MAIN_FIGURE_HEIGHT_SHORT)
@@ -206,21 +290,24 @@ def main() -> None:
     draw_forest(axes[0][0], stimulus_cells, "EdgeStdFCV", "Stimulus: corr. with FCV", "#5B8DB8", "A")
     draw_scatter(
         axes[0][1], stimulus, stimulus_cells, "EdgeStdFCV", "FCV",
-        "OO_fraction", "OO frac.", "#5B8DB8", "C", False,
+        "Hard_OO_fraction", "OO frac.", "#5B8DB8", "C", False,
     )
     draw_scatter(
         axes[0][2], stimulus, stimulus_cells, "EdgeStdFCV", "FCV",
-        "PostDCA", r"$\mathrm{DCA}_{\mathrm{post}}$", "#5B8DB8", "D", True,
+        "FU_DCApost", r"$\mathrm{DCA}_{\mathrm{post}}$", "#5B8DB8", "D", True,
     )
 
-    draw_forest(axes[1][0], delta_cells, "EdgeStdFCV", r"Change: corr. with $\Delta$FCV", "#5B8DB8", "B")
-    draw_scatter(
-        axes[1][1], delta, delta_cells, "EdgeStdFCV", r"$\Delta$FCV",
-        "OO_fraction", "OO frac.", "#5B8DB8", "E", False,
+    draw_forest(
+        axes[1][0], stimulus_cells, "ConditionFCVSD",
+        "OMR FCV s.d.", "#4C9A8A", "B",
     )
     draw_scatter(
-        axes[1][2], delta, delta_cells, "EdgeStdFCV", r"$\Delta$FCV",
-        "PostDCA", r"$\mathrm{DCA}_{\mathrm{post}}$", "#5B8DB8", "F", False,
+        axes[1][1], stimulus, stimulus_cells, "ConditionFCVSD", "OMR FCV s.d.",
+        "Hard_OO_fraction", "OO frac.", "#4C9A8A", "E", False,
+    )
+    draw_scatter(
+        axes[1][2], stimulus, stimulus_cells, "ConditionFCVSD", "OMR FCV s.d.",
+        "FU_DCApost", r"$\mathrm{DCA}_{\mathrm{post}}$", "#4C9A8A", "F", False,
     )
 
     axes[0][1].set_ylim((-2.0,2.0));
@@ -239,11 +326,11 @@ def main() -> None:
     )
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     OUT_STATS.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(OUT_PNG, dpi=300, bbox_inches="tight", transparent=False)
+    figure.savefig(OUT_PNG, dpi=600, bbox_inches="tight", transparent=False)
     plt.close(figure)
 
     rows = []
-    for cell in [*stimulus_cells, *delta_cells]:
+    for cell in stimulus_cells:
         rows.append(
             {
                 "analysis": cell["analysis"],
@@ -252,11 +339,15 @@ def main() -> None:
                 "coef": cell["r"],
                 "p": cell["p"],
                 "p_fdr_bh_within_analysis": cell["p_fdr"],
+                "panel_ab_p_used": cell["p"] if PANEL_AB_P_MODE == "raw" else cell["p_fdr"],
+                "panel_ab_p_mode": PANEL_AB_P_MODE,
                 "boot_ci_lo": cell["lo"],
                 "boot_ci_hi": cell["hi"],
-                "n": 42,
+                "n": len(stimulus),
                 "n_boot": forest.N_BOOT,
                 "bootstrap_seed": forest.BOOTSTRAP_SEED,
+                "panel_ab_distribution": PANEL_AB_DISTRIBUTION,
+                "SC_source": ARGS.sc_source,
             }
         )
     pd.DataFrame(rows).to_csv(OUT_STATS, index=False)

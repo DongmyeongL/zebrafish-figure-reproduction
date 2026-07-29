@@ -20,9 +20,9 @@ COMPARISONS = {
         ["EdgeStdFCV", "FCS", "ProfileCorrDistFCV", "NetTE", "NeighborNetTE"],
     ),
     "figure12": (
-        "figure12/figure12_subject_region_structural_measures.csv",
+        "figure12/functional_unit_region_measures/fcs_calibrated_skeleton_kmeans_nearest_r12/figure12_subject_region_functional_unit_structural_measures.csv",
         ["Subject", "node"],
-        ["OO_fraction", "PostDCA", "PreDCA", "Modularity", "LogOutIn"],
+        ["Hard_OO_fraction", "FU_DCApost", "FU_DCApre", "Reciprocity", "LogOutIn"],
     ),
     "stimulus": (
         "figure_stimulus/stimulus_fc_measures_subject_condition_region.csv",
@@ -62,12 +62,18 @@ def validate_figure9(derived: Path) -> None:
 
 
 def validate_figure12(derived: Path) -> None:
-    table = pd.read_csv(derived / "figure12" / "figure12_subject_region_structural_measures.csv")
-    measures = ["OO_fraction", "PostDCA", "PreDCA", "Modularity", "LogOutIn"]
+    table = pd.read_csv(
+        derived / "figure12" / "functional_unit_region_measures"
+        / "fcs_calibrated_skeleton_kmeans_nearest_r12"
+        / "figure12_subject_region_functional_unit_structural_measures.csv"
+    )
+    measures = ["Hard_OO_fraction", "FU_DCApost", "FU_DCApre", "Reciprocity", "LogOutIn"]
     require_columns(table, ["Subject", "recording_id", "node", *measures], "figure12")
-    if table["Subject"].nunique() != 7 or table["node"].nunique() != 66:
-        raise RuntimeError("figure12: expected seven subjects and 66 root areas")
-    print(f"OK figure12: {len(table)} subject-region rows, 66 regions")
+    canonical = pd.read_csv(derived / "common" / "legacy_stimulus_forest_42_regions_no_rOB.csv")
+    subset = table[table["node"].isin(canonical["node"])]
+    if len(subset) != 294 or not subset.groupby("node")["Subject"].nunique().eq(7).all():
+        raise RuntimeError("figure12: canonical 42-region skeleton-r12 table is incomplete")
+    print(f"OK figure12: {len(subset)} canonical subject-region rows, 42 regions")
 
 
 def validate_stimulus(derived: Path) -> None:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw regional zebrafish structural measures from clean Figure 12 data."""
+"""Draw regional zebrafish structural measures from the canonical skeleton-r12 SC."""
 
 from __future__ import annotations
 
@@ -27,8 +27,11 @@ STRUCTURAL_TABLE = (
     PACK_ROOT
     / "derived_data"
     / "figure12"
-    / "figure12_subject_region_structural_measures.csv"
+    / "functional_unit_region_measures"
+    / "fcs_calibrated_skeleton_kmeans_nearest_r12"
+    / "figure12_subject_region_functional_unit_structural_measures.csv"
 )
+SC_SOURCE = "fcs_calibrated_skeleton_kmeans_nearest_r12"
 REGIONS_FILE = (
     PACK_ROOT
     / "derived_data"
@@ -39,11 +42,11 @@ OUTPUT_PNG = PACK_ROOT / "figures" / "figure_supply_2_proc.png"
 OUTPUT_STATS = PACK_ROOT / "statistics" / "figure_supply_2_proc_region_summary.csv"
 
 FEATURES = (
-    ("A", "PostDCA", r"$\mathrm{DCA}_{\mathrm{post}}$"),
-    ("B", "PreDCA", r"$\mathrm{DCA}_{\mathrm{pre}}$"),
-    ("C", "Modularity", "Modularity Q"),
-    ("D", "LogOutIn", r"$\log$(Out/In)"),
-    ("E", "OO_fraction", "OO fraction"),
+    ("A", "Hard_OO_fraction", "OO fraction"),
+    ("B", "FU_DCApost", r"$\mathrm{DCA}_{\mathrm{post}}$"),
+    ("C", "FU_DCApre", r"$\mathrm{DCA}_{\mathrm{pre}}$"),
+    ("D", "Reciprocity", "Reciprocity"),
+    ("E", "LogOutIn", r"$\log$(Out/In)"),
 )
 DIVISION_RANK = {group: rank for rank, group in enumerate(ANATOMY_GROUP_ORDER)}
 DIVISION_COLORS = fs.ZEBRAFISH_DIVISION_COLORS
@@ -99,6 +102,7 @@ def summarize(data: pd.DataFrame, regions: pd.DataFrame) -> pd.DataFrame:
             rows.append(
                 {
                     "figure": "figure_supply_2_proc",
+                    "SC_source": SC_SOURCE,
                     "panel": panel,
                     "metric": metric,
                     "metric_label": ylabel,
@@ -178,13 +182,10 @@ def main() -> None:
         draw_panel(ax, panel_data, ylabel)
         fs.add_panel_label_fig(fig, ax, panel, dx=-0.055, dy=0.008, fontsize=PANEL_FS)
 
-    for ax in axes[:2]:
-        ax.set_yticks([-0.04, -0.02, 0.00, 0.02])
-
     OUTPUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_STATS.parent.mkdir(parents=True, exist_ok=True)
     summary.to_csv(OUTPUT_STATS, index=False)
-    fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight")
+    fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight",transparent=False)
     plt.close(fig)
 
     print(f"Saved {OUTPUT_PNG}")

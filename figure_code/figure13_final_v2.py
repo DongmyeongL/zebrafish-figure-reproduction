@@ -48,25 +48,17 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 DERIVED_DIR = PROJECT_ROOT / "derived_data" / "figure13"
 RAW_DIR = PROJECT_ROOT / "raw_data" / "figure13"
-MODEL_INPUT_DIR = (
-    PROJECT_ROOT / "raw_data" / "figure_supply_15" / "figure13_inputs"
-)
 FIGURE_DIR = PROJECT_ROOT / "figures"
 STATS_DIR = PROJECT_ROOT / "statistics"
 STATS_CSV = STATS_DIR / "figure13_stats_v2.csv"
 OUT_PNG = FIGURE_DIR / "figure13_final_v2.png"
 ENERGY_POTENTIAL_CURVES = DERIVED_DIR / "figure13_layer_energy_potential_curves.csv"
-if not ENERGY_POTENTIAL_CURVES.exists():
-    ENERGY_POTENTIAL_CURVES = MODEL_INPUT_DIR / "figure13_layer_energy_potential_curves.csv"
 ENERGY_POTENTIAL_SUMMARY = DERIVED_DIR / "figure13_layer_energy_potential_summary.csv"
-if not ENERGY_POTENTIAL_SUMMARY.exists():
-    ENERGY_POTENTIAL_SUMMARY = MODEL_INPUT_DIR / "figure13_layer_energy_potential_summary.csv"
 # All-layer, dense-epsilon recompute (figure13_layer_energy_potential_v1.py).
 ENERGY_POTENTIAL_CURVES_V1 = DERIVED_DIR / "figure13_layer_energy_potential_curves_v1.csv"
 # Per-(epsilon, run, layer) summary from the SAME 50-run v1 simulation; holds
 # fcv_from_fc_state, letting panel-B FCV share the width source at n=50.
 ENERGY_POTENTIAL_SUMMARY_V1 = DERIVED_DIR / "layer_fcv_dense_summary.csv"
-ENERGY_WIDTH_DENSE = DERIVED_DIR / "layer_energy_width_dense.csv"
 
 # Well width is measured as the z-range where U(z) <= U_min + ENERGY_WIDTH_DELTA_U.
 ENERGY_WIDTH_DELTA_U = 2.0
@@ -223,8 +215,6 @@ def plot_violin_bootstrap(ax, boot_data, p_values, ylabel, colors_violin):
 
 def load_figure11_layer_data():
     data_path = DERIVED_DIR / "layer_asymmetric_epsilon_linear_data.npz"
-    if not data_path.exists():
-        data_path = MODEL_INPUT_DIR / "layer_asymmetric_epsilon_linear_data.npz"
     return layer_plot.load_results(data_path)
 
 
@@ -255,12 +245,6 @@ def load_energy_width(dU=ENERGY_WIDTH_DELTA_U):
     Uses the all-layer, dense-epsilon recompute (ENERGY_POTENTIAL_CURVES_V1) when
     present, otherwise falls back to the base Layer 1 / Layer 4 curves.
     """
-    if ENERGY_WIDTH_DENSE.exists():
-        dense = pd.read_csv(ENERGY_WIDTH_DENSE)
-        return dense.rename(columns={"energy_well_width": "width"})[
-            ["epsilon", "run", "layer", "width"]
-        ]
-
     curves_path = ENERGY_POTENTIAL_CURVES_V1 if ENERGY_POTENTIAL_CURVES_V1.exists() else ENERGY_POTENTIAL_CURVES
     if not curves_path.exists():
         raise FileNotFoundError(

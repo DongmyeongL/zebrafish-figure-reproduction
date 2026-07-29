@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TE and first-order structural controls from clean Figure 9/12 tables."""
+"""TE and skeleton-r12 directed structural controls from clean Figure 9/12 tables."""
 
 from __future__ import annotations
 
@@ -17,7 +17,35 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
 from scipy.stats import mannwhitneyu, pearsonr
-from statsmodels.stats.multitest import multipletests
+try:
+    from statsmodels.stats.multitest import multipletests
+except ModuleNotFoundError:
+    def multipletests(pvals, alpha=0.05, method="holm"):
+        pvals = np.asarray(pvals, dtype=float)
+        n = len(pvals)
+        order = np.argsort(pvals)
+        corrected = np.full(n, np.nan, dtype=float)
+        if method == "holm":
+            adjusted_sorted = np.empty(n, dtype=float)
+            running = 0.0
+            for rank, idx in enumerate(order):
+                value = (n - rank) * pvals[idx]
+                running = max(running, value)
+                adjusted_sorted[rank] = min(running, 1.0)
+            corrected[order] = adjusted_sorted
+        elif method in {"fdr_bh", "bh"}:
+            adjusted_sorted = np.empty(n, dtype=float)
+            running = 1.0
+            for rank_from_end, idx in enumerate(order[::-1], start=1):
+                rank = n - rank_from_end + 1
+                value = pvals[idx] * n / rank
+                running = min(running, value)
+                adjusted_sorted[n - rank_from_end] = min(running, 1.0)
+            corrected[order] = adjusted_sorted
+        else:
+            raise ValueError(f"Unsupported correction method without statsmodels: {method}")
+        reject = corrected <= alpha
+        return reject, corrected, None, None
 
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -41,13 +69,22 @@ STRUCTURAL_TABLE = (
     PACK_ROOT
     / "derived_data"
     / "figure12"
-    / "figure12_subject_region_structural_measures.csv"
+    / "functional_unit_region_measures"
+    / "fcs_calibrated_skeleton_kmeans_nearest_r12"
+    / "figure12_subject_region_functional_unit_structural_measures.csv"
 )
+SC_SOURCE = "fcs_calibrated_skeleton_kmeans_nearest_r12"
 REGIONS_FILE = (
     PACK_ROOT
     / "derived_data"
     / "common"
     / "legacy_stimulus_forest_42_regions_no_rOB.csv"
+)
+MAIN_R12_MATCHED_TABLE = (
+    PACK_ROOT
+    / "derived_data"
+    / "common"
+    / "figure_fcv_fcs_fu_sc_corr_forest_fcs_calibrated_skeleton_kmeans_nearest_r12_two_way_subsampling_input.csv"
 )
 OUTPUT_PNG = PACK_ROOT / "figures" / "figure_supplement_te_structural_controls.png"
 STATS_CSV = (
@@ -85,19 +122,22 @@ def load_clean_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         raise RuntimeError("Expected seven observations for each of 42 regions")
 
     functional_columns = ["EdgeStdFCV", "NetTE", "NeighborNetTE"]
-    structural_columns = ["Modularity", "LogOutIn"]
+    structural_columns = ["Reciprocity", "LogOutIn"]
     if functional[functional_columns].isna().any().any():
         raise RuntimeError("Functional control inputs contain missing values")
-    if structural[structural_columns].isna().any().any():
-        raise RuntimeError("Structural control inputs contain missing values")
+    if structural[structural_columns].dropna(how="all").empty:
+        raise RuntimeError("Structural control inputs contain no finite values")
 
+    functional["EdgeStdFCV_z"] = functional.groupby("recording_id")[
+        "EdgeStdFCV"
+    ].transform(lambda values: zscore(values.to_numpy(float)))
     functional["NetTE_z"] = functional.groupby("recording_id")["NetTE"].transform(
         lambda values: zscore(values.to_numpy(float))
     )
     functional["NeighborNetTE_z"] = functional.groupby("recording_id")[
         "NeighborNetTE"
     ].transform(lambda values: zscore(values.to_numpy(float)))
-    structural["Modularity_z"] = structural.groupby("recording_id")["Modularity"].transform(
+    structural["Reciprocity_z"] = structural.groupby("recording_id")["Reciprocity"].transform(
         lambda values: zscore(values.to_numpy(float))
     )
     structural["LogOutIn_z"] = structural.groupby("recording_id")["LogOutIn"].transform(
@@ -107,19 +147,36 @@ def load_clean_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     functional_summary = (
         functional.groupby(keys, as_index=False)
         .agg(
-            EdgeStdFCV=("EdgeStdFCV", "mean"),
-            NetTE=("NetTE", "mean"),
-            NeighborNetTE=("NeighborNetTE", "mean"),
+            EdgeStdFCV=("EdgeStdFCV_z", "mean"),
+            NetTE=("NetTE_z", "mean"),
+            NeighborNetTE=("NeighborNetTE_z", "mean"),
         )
     )
     structural_summary = (
         structural.groupby(keys, as_index=False)
-        .agg(Modularity=("Modularity", "mean"), LogOutIn=("LogOutIn", "mean"))
+        .agg(
+            Reciprocity=("Reciprocity", "mean"),
+            LogOutIn=("LogOutIn", "mean"),
+        )
     )
     region_summary = functional_summary.merge(
         structural_summary, on=keys, how="inner", validate="one_to_one"
     )
     region_summary["FCV_z"] = zscore(region_summary["EdgeStdFCV"].to_numpy(float))
+    main_r12 = pd.read_csv(MAIN_R12_MATCHED_TABLE)[
+        [*keys, "EdgeStdFCV", "Reciprocity", "LogOutIn"]
+    ].rename(
+        columns={
+            "EdgeStdFCV": "Main_FCV",
+            "Reciprocity": "Main_Reciprocity",
+            "LogOutIn": "Main_LogOutIn",
+        }
+    )
+    region_summary = region_summary.merge(
+        main_r12, on=keys, how="inner", validate="one_to_one"
+    )
+    if len(region_summary) != 42:
+        raise RuntimeError("Expected 42 regions after matching the main skeleton-r12 input")
     return functional, structural, region_summary
 
 
@@ -151,6 +208,7 @@ def record_division_stats(panel: str, df: pd.DataFrame) -> tuple[list, np.ndarra
         STATS_ROWS.append(
             {
                 "figure": "figure_supplement_te_structural_controls",
+                "SC_source": SC_SOURCE if panel in {"E: Reciprocity", "F: LogOutIn"} else "not_applicable",
                 "panel": panel,
                 "test": "Mann-Whitney U",
                 "metric": panel,
@@ -220,23 +278,37 @@ def correlation_rows(region_summary: pd.DataFrame) -> list[dict]:
             "D", "Neighbor TE_net", "NeighborNetTE",
             "Neighbor " + r"$\mathrm{TE}_{\mathrm{net}}$", "functional",
         ),
-        ("G", "Modularity Q", "Modularity", "Modularity Q", "structural"),
-        ("H", "log(out/in)", "LogOutIn", "log(out/in)", "structural"),
+        ("G", "Reciprocity", "Reciprocity", "Reciprocity", "structural"),
+        (
+            "H", "LogOutIn", "LogOutIn",
+            r"$\log$(Out/In)", "structural",
+        ),
     ]
     rows = []
     for panel, metric, column, label, family in specifications:
-        sub = region_summary[["anatomy_group", "EdgeStdFCV", "FCV_z", column]].dropna()
-        result = pearsonr(sub["EdgeStdFCV"], sub[column])
+        if family == "structural":
+            x_column = f"Main_{column}"
+            y_column = "Main_FCV"
+        else:
+            x_column = column
+            y_column = "EdgeStdFCV"
+        sub = region_summary[["anatomy_group", y_column, x_column]].dropna()
+        result = pearsonr(sub[y_column], sub[x_column])
         rows.append(
             {
                 "figure": "figure_supplement_te_structural_controls",
+                "SC_source": SC_SOURCE if family == "structural" else "not_applicable",
                 "panel": panel,
                 "test": "Pearson correlation",
                 "metric": metric,
                 "plot_label": label,
                 "family": family,
-                "x_values": sub[column].to_numpy(float),
-                "y_values": sub["FCV_z"].to_numpy(float),
+                "x_values": sub[x_column].to_numpy(float),
+                "y_values": (
+                    sub[y_column].to_numpy(float)
+                    if family == "structural"
+                    else zscore(sub[y_column].to_numpy(float))
+                ),
                 "division_values": sub["anatomy_group"].astype(str).to_numpy(),
                 "r": float(result.statistic),
                 "p_value": float(result.pvalue),
@@ -334,15 +406,15 @@ def main() -> None:
         axes["D"], corr_by_panel["D"], "Neighbor " + r"$\mathrm{TE}_{\mathrm{net}}$ (z)"
     )
     draw_boxplot(
-        axes["E"], wide_division_df(structural, "Modularity_z"),
-        "Modularity Q (z)", "E: Modularity Q", (-3.4, 3.8),
+        axes["E"], wide_division_df(structural, "Reciprocity_z"),
+        "Reciprocity", "E: Reciprocity", (-3.4, 3.8),
     )
     draw_boxplot(
         axes["F"], wide_division_df(structural, "LogOutIn_z"),
-        r"$\log(\mathrm{out/in})$ (z)", "F: log(out/in)", (-3.4, 3.8),
+        r"$\log$(Out/In)", "F: LogOutIn", (-3.4, 3.8),
     )
-    draw_scatter(axes["G"], corr_by_panel["G"], "Modularity Q (z)")
-    draw_scatter(axes["H"], corr_by_panel["H"], r"$\log(\mathrm{out/in})$ (z)")
+    draw_scatter(axes["G"], corr_by_panel["G"], "Reciprocity")
+    draw_scatter(axes["H"], corr_by_panel["H"], r"$\log$(Out/In)")
 
     for label, ax in axes.items():
         ax.text(

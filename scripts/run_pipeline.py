@@ -64,19 +64,32 @@ def run_figure9(raw_root: Path, derived_root: Path, env: dict[str, str], from_pr
 
 
 def run_figure12(raw_root: Path, derived_root: Path, env: dict[str, str]) -> None:
-    compact = [raw_root / "figure12" / f"subject_{subject}_compact_sc.npz" for subject in SUBJECTS]
-    primary = [
-        raw_root / "figure9" / "original_subjects" / f"subject_{subject}_data_cellular_synapse_sc_100_data.pkl"
+    source = "fcs_calibrated_skeleton_kmeans_nearest_r12"
+    compact_dir = raw_root / "figure12" / f"{source}_sc"
+    compact = [compact_dir / f"subject_{subject}_compact_sc.npz" for subject in SUBJECTS]
+    subject_mats = [
+        raw_root / "figure12" / "original_subject_mat" / f"subject_{subject}_data.mat"
         for subject in SUBJECTS
     ]
     directory = PROCESSING / "figure12"
     if not all(path.is_file() for path in compact):
-        require_files(primary, "primary zebrafish subject bundles or seven compact SC files")
-        run(directory / "01_extract_sc_inputs.py", env)
-    require_files(compact, "seven compact SC files")
-    run(directory / "02_compute_cell_dca.py", env)
-    run(directory / "03_compute_region_sc_measures.py", env)
-    run(directory / "04_build_figure12_table.py", env)
+        require_files(subject_mats, "subject soma-coordinate MAT files")
+        anatomy = raw_root / "figure12" / "anatomy"
+        require_files(
+            [
+                anatomy / "neuronEndpoints_data.mat",
+                anatomy / "somaCoordinates_data.mat",
+                anatomy / "signle_neuron_poistion_data.mat",
+            ],
+            "morphology and endpoint MAT files",
+        )
+        env["ZF_ORIGINAL_MAT_ROOT"] = str(raw_root / "figure12" / "original_subject_mat")
+        env["ZF_ANATOMY_ROOT"] = str(anatomy)
+        run(directory / "00_calibrate_skeleton_kmeans_then_build_sc.py", env, "--build-sc")
+    require_files(compact, "seven skeleton-KMeans nearest-endpoint r12 compact SC files")
+    run(directory / "02_compute_cell_dca.py", env, "--sc-source", source)
+    run(directory / "03_compute_region_sc_measures.py", env, "--sc-source", source)
+    run(directory / "04_build_figure12_table.py", env, "--sc-source", source)
     run(ROOT / "scripts" / "validate_derived.py", env, "figure12", "--derived-root", str(derived_root))
 
 
@@ -147,28 +160,11 @@ def run_supply13(derived_root: Path, env: dict[str, str], full_controls: bool) -
     run(PROCESSING / "figure_supply_13" / "compute_te_surrogate_validation.py", env)
 
 
-def run_supply1(raw_root: Path, env: dict[str, str]) -> None:
-    primary = raw_root / "figure_supply_1" / "primary"
-    pair_data = primary / "figure_supply1_fc_dist_data.npz"
-    soma_data = primary / "figure_supply1_soma_dist_data.npy"
-    require_files([pair_data, soma_data], "Supply 1 primary pair-level inputs")
-    run(
-        PROCESSING / "figure_supply_1" / "build_compact_input.py",
-        env,
-        "--pair-data",
-        str(pair_data),
-        "--soma-distance-data",
-        str(soma_data),
-        "--output",
-        str(raw_root / "figure_supply_1" / "figure_supply_1_compact.npz"),
-    )
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--target",
-        choices=["figure9", "figure12", "stimulus", "celegans", "drosophila", "layer", "supply1", "supply13", "all"],
+        choices=["figure9", "figure12", "stimulus", "celegans", "drosophila", "layer", "supply13", "all"],
         default="figure9",
     )
     parser.add_argument("--stage", choices=["derived", "figures", "all"], default="derived")
@@ -194,7 +190,7 @@ def main() -> None:
     env.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 
     targets = (
-        ["figure9", "figure12", "stimulus", "celegans", "drosophila", "layer", "supply1", "supply13"]
+        ["figure9", "figure12", "stimulus", "celegans", "drosophila", "layer", "supply13"]
         if args.target == "all"
         else [args.target]
     )
@@ -213,8 +209,6 @@ def main() -> None:
                     run_layer(derived_root, env, args.full_model)
                 elif target == "supply13":
                     run_supply13(derived_root, env, args.full_controls)
-                elif target == "supply1":
-                    run_supply1(raw_root, env)
             except (FileNotFoundError, RuntimeError) as error:
                 if not args.skip_missing:
                     raise

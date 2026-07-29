@@ -1,6 +1,6 @@
 """Draw anatomical-group summaries from the clean invertebrate tables.
 
-Inputs are produced by the public invertebrate processing
+Inputs are produced inside final_figure_pack_1 by the invertebrate processing
 pipeline. No legacy plotting table or pre-rendered panel is used.
 """
 
@@ -25,20 +25,14 @@ CE_VALUES = DATA_DIR / "celegans_node_metrics.csv"
 FLY_VALUES = DATA_DIR / "drosophila_region_metrics.csv"
 CE_FCV_RECORDINGS = DATA_DIR / "celegans_fcv_recording_node.csv"
 FLY_FCV_RECORDINGS = DATA_DIR / "drosophila_fcv_recording_region.csv"
+FLY_REGION_VALUES = DATA_DIR / "drosophila_ito_137_subunit_region_metrics.csv"
 OUT_FIG = PACK / "figures" / "figure_invertebrate_anatomical_group_summary.png"
-OUT_SUMMARY = DATA_DIR / "invertebrate_anatomical_group_summary.csv"
-OUT_FIG_WITH_ZERO = (
-    PACK / "figures" / "figure_invertebrate_anatomical_group_summary_with_oo_zero.png"
-)
-OUT_SUMMARY_WITH_ZERO = (
-    DATA_DIR / "invertebrate_anatomical_group_summary_with_oo_zero.csv"
-)
 
 METRICS = [
     ("EdgeStdFCV", "FCV"),
+    ("OO_fraction", "OO fraction"),
     ("PostDCA", r"$\mathrm{DCA}_{\mathrm{post}}$"),
     ("PreDCA", r"$\mathrm{DCA}_{\mathrm{pre}}$"),
-    ("OO_fraction", "OO fraction"),
 ]
 
 GROUP_ORDER = {
@@ -152,6 +146,17 @@ def load_values() -> dict[str, pd.DataFrame]:
     return {"C. elegans": ce, "Drosophila": fly}
 
 
+def load_fly_region_values() -> pd.DataFrame:
+    fly = pd.read_csv(FLY_REGION_VALUES).replace([np.inf, -np.inf], np.nan)
+    fly = fly.rename(columns={
+        "OO_fraction_subunit": "OO_fraction",
+        "PostDCA_subunit": "PostDCA",
+        "PreDCA_subunit": "PreDCA",
+    })
+    fly["group"] = fly["fine_class"]
+    return fly
+
+
 def summarize(values: dict[str, pd.DataFrame]) -> pd.DataFrame:
     rows = []
     for species, df in values.items():
@@ -169,6 +174,23 @@ def summarize(values: dict[str, pd.DataFrame]) -> pd.DataFrame:
                     ),
                     "median": np.median(x) if len(x) else np.nan,
                 })
+    return pd.DataFrame(rows)
+
+
+def summarize_fly_region_values(df: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for group in GROUP_ORDER["Drosophila"]:
+        for metric, _ in METRICS[1:]:
+            x = df.loc[df["group"].eq(group), metric].dropna().to_numpy(float)
+            rows.append({
+                "species": "Drosophila (region-level topology)",
+                "group": group,
+                "metric": metric,
+                "n": len(x),
+                "mean": np.mean(x) if len(x) else np.nan,
+                "sem": np.std(x, ddof=1) / np.sqrt(len(x)) if len(x) > 1 else np.nan,
+                "median": np.median(x) if len(x) else np.nan,
+            })
     return pd.DataFrame(rows)
 
 
@@ -232,15 +254,16 @@ def main() -> None:
     fs.apply_supplement_figure_style()
 
     values = load_values()
-    summary = summarize(values)
-    OUT_SUMMARY.parent.mkdir(parents=True, exist_ok=True)
-    summary.to_csv(OUT_SUMMARY, index=False)
-    summary.to_csv(OUT_SUMMARY_WITH_ZERO, index=False)
+    fly_region_values = load_fly_region_values()
+    summary = pd.concat(
+        [summarize(values), summarize_fly_region_values(fly_region_values)],
+        ignore_index=True,
+    )
 
-    fig, axes = plt.subplots(2, 4, figsize=(16.0, 8.16))
+    fig, axes = plt.subplots(3, 4, figsize=(16.0, 11.8))
     fig.subplots_adjust(
-        left=0.09, right=0.985, bottom=0.145, top=0.925,
-        wspace=0.52, hspace=0.62,
+        left=0.09, right=0.985, bottom=0.09, top=0.945,
+        wspace=0.52, hspace=0.82,
     )
     panel_labels = ["A", "B", "C", "D", "E", "F", "G", "H"]
     for row, species in enumerate(("C. elegans", "Drosophila")):
@@ -257,7 +280,7 @@ def main() -> None:
         fig.text(
             row_center,
             max(position.y1 for position in row_positions) + 0.055,
-            species,
+            species if row == 0 else "Drosophila: local cellular topology",
             ha="center",
             va="bottom",
             fontsize=fs.SUPP_TITLE_FS,
@@ -265,19 +288,44 @@ def main() -> None:
             fontstyle="italic",
         )
 
+    axes[2, 0].remove()
+    for col, (metric, ylabel) in enumerate(METRICS[1:], start=1):
+        ax = axes[2, col]
+        draw_panel(
+            ax,
+            fly_region_values,
+            "Drosophila",
+            metric,
+            ylabel,
+            9200 + col,
+        )
+        ax.text(
+            -0.27,
+            1.04,
+            chr(ord("H") + col),
+            transform=ax.transAxes,
+            fontweight="bold",
+            fontsize=fs.SUPP_PANEL_LABEL_FS,
+            ha="left",
+            va="bottom",
+        )
+
+    bottom_positions = [axes[2, col].get_position() for col in range(1, 4)]
+    fig.text(
+        (bottom_positions[0].x0 + bottom_positions[-1].x1) / 2,
+        max(position.y1 for position in bottom_positions) + 0.047,
+        "Drosophila: region-level topology",
+        ha="center",
+        va="bottom",
+        fontsize=fs.SUPP_TITLE_FS,
+        fontweight="bold",
+        fontstyle="italic",
+    )
+
     OUT_FIG.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT_FIG, dpi=300, bbox_inches="tight", pad_inches=0.03, transparent=False)
-    fig.savefig(
-        OUT_FIG_WITH_ZERO,
-        dpi=300,
-        bbox_inches="tight",
-        pad_inches=0.03,
-        transparent=False,
-    )
     plt.close(fig)
     print(f"Saved {OUT_FIG}")
-    print(f"Saved {OUT_FIG_WITH_ZERO}")
-    print(f"Saved {OUT_SUMMARY}")
 
 
 if __name__ == "__main__":
