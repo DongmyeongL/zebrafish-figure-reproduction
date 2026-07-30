@@ -21,13 +21,16 @@ FCS_CALIBRATED_SKELETON_PATH_SC_DIR = RAW_DIR / "fcs_calibrated_skeleton_path_sc
 FCS_CALIBRATED_SKELETON_NEAREST_ENDPOINT_SC_DIR = RAW_DIR / "fcs_calibrated_skeleton_nearest_endpoint_sc"
 FCS_CALIBRATED_SKELETON_KMEANS_NEAREST_R11_SC_DIR = RAW_DIR / "fcs_calibrated_skeleton_kmeans_nearest_r11_sc"
 FCS_CALIBRATED_SKELETON_KMEANS_NEAREST_R12_SC_DIR = RAW_DIR / "fcs_calibrated_skeleton_kmeans_nearest_r12_sc"
-ORIGINAL_SC_DIR = (
-    WORKSPACE_ROOT
-    / "fcv_postdca_raw_recompute"
-    / "data"
-    / "zebrafish"
-    / "sc"
-    / "original_raw_data"
+ORIGINAL_SC_DIR = Path(
+    os.environ.get(
+        "ZF_ORIGINAL_SC_DIR",
+        WORKSPACE_ROOT
+        / "fcv_postdca_raw_recompute"
+        / "data"
+        / "zebrafish"
+        / "sc"
+        / "original_raw_data",
+    )
 )
 
 LREGION = [

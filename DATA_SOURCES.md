@@ -13,7 +13,7 @@ missing raw observations unless explicitly encoded by the original analysis.
 | `derived_data/invertebrates/` | Matched worm neuron summaries, fly local-cell and 137-unit summaries, and compact multiscale matrices | Derived from published worm and fly datasets |
 | `derived_data/figure13/` | Dense layer-model summaries and potential curves | Model outputs; model implementation is included |
 | `derived_data/figure_supply_13/` | TE null, leave-one-animal-out, and example-pair summaries | Derived from zebrafish functional-unit traces |
-| `derived_data/robustness/` | Reconstruction-grid correlations, morphology-subsampling iterations, topology-null realizations, and region/subject control inputs | Derived from the primary skeleton-r12 zebrafish SC and matched FCV tables |
+| `derived_data/robustness/` | Reconstruction-grid correlations, morphology-subsampling iterations, topology-null realizations, OO-threshold/soft-OO subject-region values, and region/subject/OMR control inputs | Derived from the primary skeleton-r12 zebrafish SC and matched spontaneous/stimulus FCV tables |
 | `raw_data/figure_supply_1/` | Frozen six-panel alignment/construction QC asset and fit statistics | Microscopy-scale morphology and endpoint MAT files are not redistributed |
 | `raw_data/figure_supply_0/` | Frozen empirical and whole-brain simulation inputs | Large whole-brain simulation is not rerun |
 | `raw_data/figure_supply_5/` | Fixed network diagrams and compact null statistics | Diagram assets are not regenerated in this release |

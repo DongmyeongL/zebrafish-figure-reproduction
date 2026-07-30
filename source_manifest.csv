@@ -13,6 +13,6 @@ raw_data/figure_supply_5,fixed network diagrams and null summaries,zebrafish net
 raw_data/figure_supply_15,representative traces and model-panel inputs,zebrafish and four-layer simulations
 figure_code,plotting and compact model code,curated manuscript plotting scripts
 data_processing_code,raw-to-derived calculations,curated and path-normalized manuscript processing scripts
-derived_data/robustness,SI robustness analysis inputs,primary skeleton-r12 structural connectivity and matched zebrafish FCV
+derived_data/robustness,SI robustness analysis inputs including OO-definition and OMR controls,primary skeleton-r12 structural connectivity and matched zebrafish spontaneous/stimulus FCV
 raw_data/figure9,bundled compact functional-unit traces,prepared zebrafish subject-level functional units
 config/datasets.csv,raw input contract and source registry,public release curation

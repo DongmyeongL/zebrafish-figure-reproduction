@@ -75,6 +75,29 @@ python scripts/manage_data.py --raw-root /path/to/prepared_raw_data \
   --target robustness --strict
 ```
 
+The OO-threshold analysis additionally uses the subject r12 compact SC,
+anatomical-unit DCA files, and prepared subject bundles that define
+anatomical-unit membership. Its full generator is:
+
+```bash
+ZF_RAW_DATA_ROOT=/path/to/prepared_raw_data \
+ZF_ORIGINAL_SC_DIR=/path/to/prepared_raw_data/figure9/original_subjects \
+ZF_DERIVED_DATA_ROOT=work/robustness_full/derived_data \
+ZF_OO_SENSITIVITY_DERIVED=work/robustness_inputs/oo_threshold_sensitivity \
+ZF_OO_SENSITIVITY_STATS=work/robustness_statistics \
+ZF_OO_SENSITIVITY_FIGURES=work/robustness_figures \
+python data_processing_code/figure12/validation/20_r12_oo_threshold_sensitivity.py
+```
+
+Git includes the resulting compact subject-region threshold, near-zero
+exclusion, and soft-OO tables, so the reported statistical summaries can be
+reproduced without redistributing the cell-level SC. The OMR adjustment uses
+the bundled matched spontaneous/stimulus region table and requires no
+additional external input. Its standalone analysis is also available as
+`data_processing_code/figure12/validation/21_r12_omr_spontaneous_adjustment.py`;
+`ZF_OMR_ADJUSTMENT_INPUT` and `ZF_OMR_ADJUSTMENT_OUTPUT` can be used to select
+alternative input and output paths.
+
 ## External C. elegans inputs
 
 Expected under `invertebrates/celegans/`:
