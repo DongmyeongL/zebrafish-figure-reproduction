@@ -38,7 +38,7 @@ schemas are listed in `RAW_DATA.md` and `config/datasets.csv`.
 | *Drosophila* metrics | `data_processing_code/invertebrates/02_compute_drosophila_metrics.py` | Prepared Branson999 and FlyWire exports external |
 | Four-layer model | `data_processing_code/figure13/` | Code and parameters bundled; full run is computationally intensive |
 | Supply 13 TE controls | `data_processing_code/figure_supply_13/` | Uses bundled Figure 9 traces; full surrogate run is intensive |
-| SI robustness controls | `data_processing_code/robustness/` | Compact iteration- and region-level inputs bundled; rebuilding their endpoint-level inputs requires the external Figure 12 source data |
+| SI robustness controls | `data_processing_code/robustness/` and `data_processing_code/figure12/validation/` | Compact inputs bundled; full parameter-grid, morphology-subsampling, and strength-null generation uses the external Figure 12 source data |
 
 Provider records do not always expose files in the prepared schema consumed by
 these scripts. Accordingly, DOI links document scientific provenance, while a

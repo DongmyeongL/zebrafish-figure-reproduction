@@ -29,12 +29,13 @@ PACK_ROOT = SCRIPT_DIR.parents[1]
 RAW_ROOT = Path(os.environ.get("ZF_RAW_DATA_ROOT", PACK_ROOT / "raw_data"))
 DERIVED_ROOT = Path(os.environ.get("ZF_DERIVED_DATA_ROOT", PACK_ROOT / "derived_data"))
 OUT_DIR = DERIVED_ROOT / "figure12" / "sc_reconstruction"
+COMPACT_SC_ROOT = Path(os.environ.get("ZF_COMPACT_SC_ROOT", RAW_ROOT / "figure12"))
 COMPACT_SC_DIRS = {
-    "fcs_calibrated_endpoint": RAW_ROOT / "figure12" / "fcs_calibrated_endpoint_sc",
-    "fcs_calibrated_skeleton_path": RAW_ROOT / "figure12" / "fcs_calibrated_skeleton_path_sc",
-    "fcs_calibrated_skeleton_nearest_endpoint": RAW_ROOT / "figure12" / "fcs_calibrated_skeleton_nearest_endpoint_sc",
-    "fcs_calibrated_skeleton_kmeans_nearest_r11": RAW_ROOT / "figure12" / "fcs_calibrated_skeleton_kmeans_nearest_r11_sc",
-    "fcs_calibrated_skeleton_kmeans_nearest_r12": RAW_ROOT / "figure12" / "fcs_calibrated_skeleton_kmeans_nearest_r12_sc",
+    "fcs_calibrated_endpoint": COMPACT_SC_ROOT / "fcs_calibrated_endpoint_sc",
+    "fcs_calibrated_skeleton_path": COMPACT_SC_ROOT / "fcs_calibrated_skeleton_path_sc",
+    "fcs_calibrated_skeleton_nearest_endpoint": COMPACT_SC_ROOT / "fcs_calibrated_skeleton_nearest_endpoint_sc",
+    "fcs_calibrated_skeleton_kmeans_nearest_r11": COMPACT_SC_ROOT / "fcs_calibrated_skeleton_kmeans_nearest_r11_sc",
+    "fcs_calibrated_skeleton_kmeans_nearest_r12": COMPACT_SC_ROOT / "fcs_calibrated_skeleton_kmeans_nearest_r12_sc",
 }
 PARAMETERS = (
     "m00", "m01", "m02", "bx",

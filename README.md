@@ -122,6 +122,16 @@ controls. Outputs are written to `statistics/robustness/`. See
 released inputs, and the boundary between full reconstruction and compact
 statistical reproduction.
 
+The reconstruction-dependent robustness inputs can also be regenerated from
+the external Figure 12 soma, endpoint, morphology, and prepared subject data:
+
+```bash
+python data_processing_code/robustness/generate_full_reconstruction_controls.py \
+  --raw-root /path/to/prepared_raw_data \
+  --derived-root work/robustness_full \
+  --output work/robustness_inputs
+```
+
 The input contract, expected schemas, source links, and redistribution
 boundaries are documented in `RAW_DATA.md`, `DATA_SOURCES.md`, and
 `config/datasets.csv`.

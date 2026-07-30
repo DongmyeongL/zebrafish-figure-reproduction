@@ -52,6 +52,29 @@ classification, nearest-endpoint assignment within a radius of 12 imaging-coordi
 units, anatomical-unit DCA, and regional aggregation. These large external inputs
 and generated compact SC files are not stored in GitHub.
 
+### SI robustness reconstruction
+
+The complete reconstruction-dependent SI controls use the same three external
+input groups: prepared subject bundles, subject coordinate MAT files, and the
+three anatomy/morphology MAT files. The full driver recalibrates the affine
+alignment, reconstructs skeleton-r12 endpoint edges, evaluates all 30
+anatomical-unit-size/radius settings, samples reconstructed morphologies, and
+generates weighted strength-preserving null networks:
+
+```bash
+python data_processing_code/robustness/generate_full_reconstruction_controls.py \
+  --raw-root /path/to/prepared_raw_data \
+  --derived-root work/robustness_full \
+  --output work/robustness_inputs
+```
+
+Audit these inputs before a full run with:
+
+```bash
+python scripts/manage_data.py --raw-root /path/to/prepared_raw_data \
+  --target robustness --strict
+```
+
 ## External C. elegans inputs
 
 Expected under `invertebrates/celegans/`:

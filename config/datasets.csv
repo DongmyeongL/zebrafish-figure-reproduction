@@ -1,10 +1,10 @@
 dataset_id,relative_path,distribution,required_for,source,doi_or_url,notes
 zf_functional_unit_traces,figure9/functional_unit_traces/zebrafish_subject_*_raw_cluster_traces.pkl,bundled,figure9;figure_supply_13,Prepared from saved spatial functional units,,Seven compact recording files are distributed in this repository
 zf_region_labels,figure9/region_labels.csv,bundled,figure9;figure12;stimulus,Zebrafish atlas root-area labels,,Small annotation table distributed in this repository
-zf_primary_subjects,figure9/original_subjects/subject_*_data_cellular_synapse_sc_100_data.pkl,external,figure9_primary;figure12;stimulus,Primary prepared zebrafish subject bundles,,Not redistributed; place all seven subject files at this path
+zf_primary_subjects,figure9/original_subjects/subject_*_data_cellular_synapse_sc_100_data.pkl,external,figure9_primary;figure12;stimulus;robustness,Primary prepared zebrafish subject bundles,,Not redistributed; place all seven subject files at this path
 zf_compact_sc,figure12/fcs_calibrated_skeleton_kmeans_nearest_r12_sc/subject_*_compact_sc.npz,external_alternative,figure12,Skeleton-path K-means nearest-endpoint r12 compact SC,,Seven large subject files; may be supplied instead of rebuilding SC
-zf_subject_coordinate_mat,figure12/original_subject_mat/subject_*_data.mat,external,figure12,Zebrafish imaging soma coordinates,,Required when rebuilding the r12 compact SC
-zf_anatomy_endpoint_mat,figure12/anatomy/*.mat,external,figure12,Kunst et al. morphology and endpoint coordinates,https://doi.org/10.1016/j.neuron.2019.04.034,Requires neuronEndpoints somaCoordinates and signle_neuron_poistion MAT files
+zf_subject_coordinate_mat,figure12/original_subject_mat/subject_*_data.mat,external,figure12;robustness,Zebrafish imaging soma coordinates,,Required when rebuilding the r12 compact SC and reconstruction robustness controls
+zf_anatomy_endpoint_mat,figure12/anatomy/*.mat,external,figure12;robustness,Kunst et al. morphology and endpoint coordinates,https://doi.org/10.1016/j.neuron.2019.04.034,Requires neuronEndpoints somaCoordinates and signle_neuron_poistion MAT files
 celegans_recordings,invertebrates/celegans/recordings/*_raw_traces.pkl,external,celegans,WormWideWeb Atanas et al. 2023,https://doi.org/10.1016/j.cell.2023.07.035,Prepared recording exports required by the public processing script
 celegans_connectome,invertebrates/celegans/herm_full_edgelist.csv,external,celegans,Cook et al. 2019 chemical connectome,https://doi.org/10.1038/s41586-019-1352-7,Directed chemical-synapse edge list
 celegans_annotations,invertebrates/celegans/celegans_*annotations.csv,bundled,celegans,Literature-guided analysis annotations,,Class and display-group annotations are distributed

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 
 import numpy as np
 import pandas as pd
@@ -10,8 +11,8 @@ from scipy.stats import chi2, norm
 
 
 RELEASE = Path(__file__).resolve().parents[2]
-DATA = RELEASE / "derived_data" / "robustness"
-OUTPUT = RELEASE / "statistics" / "robustness"
+DATA = Path(os.environ.get("ZF_ROBUSTNESS_DATA_ROOT", RELEASE / "derived_data" / "robustness"))
+OUTPUT = Path(os.environ.get("ZF_ROBUSTNESS_STATS_ROOT", RELEASE / "statistics" / "robustness"))
 
 
 def save_table(frame: pd.DataFrame, filename: str) -> Path:
